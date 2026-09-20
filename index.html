@@ -1,465 +1,527 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
 <title>Guest Chess</title>
 
 <style>
-:root{
-  --bg:#08131f;
-  --panel:#0d1b29;
-  --line:#26394d;
-  --text:#eef3f8;
-  --muted:#91a4b8;
-  --blue:#1683ff;
-  --green:#36d275;
-  --light:#eeeed2;
-  --dark:#769656;
+*{
+  box-sizing:border-box;
 }
 
-*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  background:#07131d;
+  color:#eef3f7;
+  font-family:Arial,Helvetica,sans-serif;
+}
 
 body{
-  margin:0;
-  background:linear-gradient(180deg,#07111c,#0b1724);
-  color:var(--text);
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-}
-
-header{
-  height:62px;
-  padding:9px 16px;
-  background:#091622;
-  border-bottom:1px solid var(--line);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-
-h1{font-size:21px;margin:0}
-h2{font-size:15px;margin:0}
-
-.sub{
-  font-size:11px;
-  color:var(--muted);
-}
-
-.online{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  font-size:12px;
-}
-
-.dot{
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  background:#f59e0b;
-}
-
-.dot.ok{background:var(--green)}
-
-main{
-  width:100%;
-  max-width:1450px;
-  margin:10px auto;
-  padding:0 7px;
-  display:grid;
-  grid-template-columns:190px minmax(0,1fr) 190px;
-  gap:7px;
-}
-
-.card{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:9px;
-  padding:8px;
-}
-
-.game{
-  padding:7px;
-  min-width:0;
-}
-
-.head,
-.gameTop{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:7px;
-}
-
-.badge{
-  background:#17283a;
-  border-radius:15px;
-  padding:3px 8px;
-  font-size:10px;
-}
-
-.list{
-  margin-top:8px;
-}
-
-.row{
-  background:#091520;
-  border:1px solid #203246;
-  border-radius:7px;
-  padding:7px;
-  margin-bottom:5px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:5px;
-}
-
-.name{
-  font-size:12px;
-  font-weight:700;
-}
-
-.small{
-  font-size:10px;
-  color:var(--muted);
-  margin-top:2px;
+  min-height:100vh;
 }
 
 button{
   border:0;
-  border-radius:7px;
-  background:var(--blue);
-  color:#fff;
-  padding:7px 9px;
-  font-weight:700;
-  font-size:11px;
   cursor:pointer;
+  color:#fff;
+  font-weight:700;
 }
 
 button:disabled{
-  opacity:.42;
+  opacity:.45;
   cursor:not-allowed;
 }
 
-.secondary{background:#304255}
-.danger{background:#a92331}
-.success{background:#158a4c}
+.top{
+  padding:18px 20px 14px;
+  border-bottom:1px solid #263746;
+  background:#071721;
+}
 
-.timeSelect{
+.brand{
   display:flex;
-  gap:4px;
+  align-items:center;
+  gap:10px;
+  font-size:27px;
+  font-weight:800;
 }
 
-.timeBtn{
-  background:#172a3e;
-  border:1px solid #2c455d;
-  font-size:12px;
-  padding:7px 12px;
-}
-
-.timeBtn.active{
-  background:var(--blue);
-  border-color:#4aa0ff;
-}
-
-.clocks{
-  display:flex;
-  gap:4px;
-  margin-top:4px;
-}
-
-.clock{
-  font:700 13px ui-monospace,monospace;
-  background:#07111c;
-  border:1px solid #2a4057;
-  padding:4px 8px;
-  border-radius:6px;
-}
-
-.clock.active{
-  border-color:#1683ff;
+.sub{
+  color:#aebbc5;
+  margin-top:3px;
 }
 
 .status{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:2px;
+  float:right;
+  margin-top:-42px;
+  font-size:17px;
 }
 
-.boardShell{
-  width:100%;
+.statusDot{
+  display:inline-block;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#f6a313;
+  vertical-align:-3px;
+  margin-right:7px;
+}
+
+.status.online .statusDot{
+  background:#19d979;
+}
+
+.status.error .statusDot{
+  background:#ff4b55;
+}
+
+.container{
+  max-width:1450px;
+  margin:auto;
+  padding:18px;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:minmax(560px,700px) 330px;
+  gap:16px;
+  align-items:start;
+}
+
+.card{
+  background:#0a1b27;
+  border:1px solid #253949;
+  border-radius:15px;
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:0 4px 20px rgba(0,0,0,.18);
+}
+
+.gameHeader{
   display:flex;
-  justify-content:center;
-  padding:4px;
-  background:#03080d;
-  border:2px solid #32495e;
-  border-radius:6px;
-  margin-top:6px;
-  box-shadow:0 4px 18px #0007;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.title{
+  font-size:24px;
+  font-weight:800;
+}
+
+.controls{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.timeBtn{
+  background:#172d40;
+  border:1px solid #30485b;
+  border-radius:10px;
+  padding:10px 18px;
+  font-size:17px;
+}
+
+.timeBtn.active{
+  background:#1686f5;
+  border-color:#43a5ff;
+}
+
+.boardWrap{
+  width:100%;
+  max-width:680px;
+  margin:14px auto 12px;
+  padding:5px;
+  border:2px solid #344b5d;
+  border-radius:9px;
+  background:#09131b;
 }
 
 .board{
-  width:min(100%,780px);
-  aspect-ratio:1;
+  width:100%;
+  aspect-ratio:1/1;
   display:grid;
   grid-template-columns:repeat(8,1fr);
-  grid-template-rows:repeat(8,1fr);
-  border:3px solid #111820;
-  outline:1px solid #60748a;
-  border-radius:2px;
   overflow:hidden;
+  border-radius:4px;
 }
 
-.sq{
+.square{
   position:relative;
   display:flex;
-  align-items:center;
   justify-content:center;
-  font-size:clamp(30px,7vw,66px);
-  line-height:1;
+  align-items:center;
   user-select:none;
-  cursor:pointer;
+  -webkit-user-select:none;
   touch-action:manipulation;
 }
 
-.light{background:var(--light)}
-.dark{background:var(--dark)}
+.light{
+  background:#eeeed2;
+}
+
+.dark{
+  background:#769656;
+}
+
+.square.selected{
+  box-shadow:inset 0 0 0 5px rgba(255,214,0,.85);
+}
+
+.square.legal::after{
+  content:"";
+  position:absolute;
+  width:25%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:rgba(0,0,0,.28);
+}
+
+.square.capture::after{
+  content:"";
+  position:absolute;
+  inset:7%;
+  border:5px solid rgba(180,30,30,.60);
+  border-radius:50%;
+}
 
 .piece{
-  font-family:"Times New Roman","DejaVu Serif",serif;
-  font-weight:700;
+  position:relative;
+  z-index:2;
+  font-size:clamp(34px,7vw,66px);
   line-height:1;
-  filter:drop-shadow(0 1px 1px #0008);
+  font-family:"Arial Unicode MS","Segoe UI Symbol",serif;
 }
 
 .whitePiece{
   color:#fff;
   text-shadow:
-    -1px -1px 0 #111,
-    1px -1px 0 #111,
-    -1px 1px 0 #111,
-    1px 1px 0 #111,
-    0 2px 2px #0008;
+    -2px -2px 0 #111,
+     2px -2px 0 #111,
+    -2px  2px 0 #111,
+     2px  2px 0 #111,
+     0 3px 4px rgba(0,0,0,.65);
 }
 
 .blackPiece{
-  color:#111;
-  text-shadow:0 1px 1px #fff6;
+  color:#15191d;
+  text-shadow:
+    0 2px 2px rgba(255,255,255,.28),
+    0 3px 4px rgba(0,0,0,.7);
 }
 
-.selected{
-  outline:4px solid #f6d84a;
-  outline-offset:-4px;
-  box-shadow:inset 0 0 0 2px #0006;
+.clocks{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:8px;
 }
 
-.legal:after{
-  content:"";
-  width:17%;
-  height:17%;
-  border-radius:50%;
-  background:#1118;
-  position:absolute;
+.clock{
+  background:#07131d;
+  border:2px solid #273d4f;
+  border-radius:10px;
+  padding:8px 12px;
+  text-align:center;
 }
 
-.capture:after{
-  content:"";
-  position:absolute;
-  inset:5%;
-  border:4px solid #1118;
-  border-radius:50%;
+.clockName{
+  color:#a9b8c4;
+  font-size:13px;
 }
 
-.coords{
-  position:absolute;
-  font-size:9px;
-  font-family:system-ui;
-  font-weight:700;
-  opacity:.8;
-  pointer-events:none;
+.clockTime{
+  font-size:30px;
+  font-family:monospace;
+  font-weight:800;
 }
 
-.file{
-  right:3px;
-  bottom:1px;
-}
-
-.rank{
-  left:3px;
-  top:1px;
+.clock.active{
+  border-color:#24a0ff;
 }
 
 .actions{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.action{
+  padding:12px 7px;
+  border-radius:9px;
+  background:#183247;
+}
+
+.action.blue{
+  background:#1678dc;
+}
+
+.action.red{
+  background:#a8273c;
+}
+
+.action.green{
+  background:#198754;
+}
+
+.action.gray{
+  background:#293d4d;
+}
+
+.sectionTitle{
+  font-size:21px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.myid{
+  color:#aebbc5;
+  margin-top:-4px;
+  margin-bottom:8px;
+}
+
+.player{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:7px;
+  padding:10px;
+  background:#07131d;
+  border:1px solid #243b4d;
+  border-radius:10px;
+  margin-bottom:7px;
+}
+
+.playerName{
+  font-weight:800;
+}
+
+.playerState{
+  color:#8ea0ad;
+  font-size:12px;
+}
+
+.challenge{
+  background:#1686f5;
+  border-radius:8px;
+  padding:8px 11px;
+}
+
+.empty{
+  color:#83939f;
+  padding:8px 0;
+}
+
+.req{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:7px;
+  background:#07131d;
+  border:1px solid #263e50;
+  border-radius:10px;
+  padding:9px;
+  margin-bottom:7px;
+}
+
+.reqBtns{
   display:flex;
   gap:5px;
-  margin-top:6px;
 }
 
-.actions button{
-  flex:1;
-}
-
-.moves{
-  margin-top:6px;
-  max-height:65px;
-  overflow:auto;
-  font:10px/1.5 ui-monospace,monospace;
-  color:#b9c8d8;
-}
-
-.chat{
-  margin-top:9px;
-}
-
-.messages{
-  height:115px;
-  overflow:auto;
-  background:#08131f;
-  border:1px solid #20354a;
+.accept{
+  background:#198754;
+  padding:8px 9px;
   border-radius:7px;
-  padding:6px;
-  margin-top:6px;
+}
+
+.decline{
+  background:#a8273c;
+  padding:8px 9px;
+  border-radius:7px;
+}
+
+.chatBox{
+  height:220px;
+  overflow-y:auto;
+  background:#07131d;
+  border:1px solid #263c4d;
+  border-radius:10px;
+  padding:9px;
 }
 
 .msg{
-  font-size:11px;
-  margin:4px 0;
+  margin-bottom:8px;
 }
 
-.msg b{
-  color:#74b9ff;
+.msgName{
+  color:#6fc1ff;
+  font-size:12px;
+  font-weight:700;
 }
 
-.send{
+.msgText{
+  background:#142b3b;
+  border-radius:8px;
+  padding:7px 9px;
+  display:inline-block;
+  max-width:90%;
+  word-break:break-word;
+}
+
+.chatInput{
   display:flex;
-  gap:4px;
-  margin-top:4px;
+  gap:6px;
+  margin-top:7px;
 }
 
-.send input{
+.chatInput input{
+  flex:1;
   min-width:0;
-  flex:1;
-  background:#08131f;
-  border:1px solid #2a4057;
+  background:#07131d;
   color:#fff;
-  border-radius:7px;
-  padding:7px;
-  font-size:11px;
+  border:1px solid #2a4254;
+  border-radius:8px;
+  padding:11px;
+  outline:none;
 }
 
-.voiceBtns{
+.chatInput button{
+  background:#1686f5;
+  padding:0 15px;
+  border-radius:8px;
+}
+
+.voice{
   display:flex;
-  gap:4px;
-  margin-top:6px;
+  gap:7px;
+  flex-wrap:wrap;
 }
 
-.voiceBtns button{
-  flex:1;
+.voice button{
+  background:#183247;
+  padding:10px 13px;
+  border-radius:8px;
 }
 
-.hint,
-.empty{
-  font-size:10px;
-  color:#71869c;
-  padding:5px 0;
+.voiceStatus{
+  width:100%;
+  color:#91a3af;
+  font-size:13px;
 }
 
 .toast{
   position:fixed;
   left:50%;
-  bottom:18px;
-  transform:translate(-50%,20px);
-  opacity:0;
-  background:#02070d;
-  border:1px solid #3a536c;
-  padding:9px 13px;
-  border-radius:8px;
-  font-size:12px;
-  transition:.2s;
-  z-index:30;
-}
-
-.toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
+  bottom:22px;
+  transform:translateX(-50%);
+  background:#172d3d;
+  border:1px solid #416075;
+  padding:11px 16px;
+  border-radius:9px;
+  z-index:9999;
+  display:none;
+  max-width:90%;
+  text-align:center;
 }
 
 .modal{
   position:fixed;
   inset:0;
-  background:#000b;
-  display:flex;
+  background:rgba(0,0,0,.72);
+  display:none;
   align-items:center;
   justify-content:center;
-  z-index:20;
-}
-
-.hide{
-  display:none;
+  z-index:5000;
+  padding:20px;
 }
 
 .modalBox{
-  background:#0d1b29;
-  border:1px solid #38506a;
-  border-radius:12px;
-  padding:18px;
+  background:#0b1e2b;
+  border:1px solid #385166;
+  border-radius:15px;
+  padding:20px;
+  width:min(400px,100%);
+  text-align:center;
 }
 
-.promo{
-  display:flex;
+.promoBtns{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
   gap:8px;
+  margin-top:15px;
 }
 
-.promo button{
-  font-size:28px;
-  width:55px;
-  height:55px;
-  background:#1b3046;
+.promoBtns button{
+  font-size:30px;
+  padding:12px 5px;
+  background:#183247;
+  border-radius:8px;
+}
+
+.gameInfo{
+  color:#aebbc5;
+  font-size:14px;
+  margin-top:4px;
 }
 
 @media(max-width:900px){
-  main{
-    grid-template-columns:165px minmax(0,1fr) 165px;
-    padding:0 4px;
-    gap:5px;
+  .layout{
+    grid-template-columns:1fr;
   }
 
-  .card{
-    padding:6px;
+  .container{
+    padding:8px;
+  }
+
+  .boardWrap{
+    max-width:none;
+  }
+
+  .piece{
+    font-size:clamp(30px,9vw,58px);
   }
 }
 
-@media(max-width:700px){
-  header{
-    height:58px;
-    padding:8px 10px;
+@media(max-width:600px){
+  .top{
+    padding:14px;
   }
 
-  h1{
-    font-size:19px;
+  .brand{
+    font-size:22px;
   }
 
-  main{
-    display:flex;
-    flex-direction:column;
-    padding:3px;
+  .status{
+    float:none;
+    margin:7px 0 0;
   }
 
-  .game{order:1}
-  .lobby{order:2}
-  .right{order:3}
-
-  .boardShell{
-    padding:2px;
+  .container{
+    padding:5px;
   }
 
-  .board{
-    width:100%;
-    border-width:2px;
+  .card{
+    border-radius:11px;
+    padding:10px;
   }
 
-  .sq{
-    font-size:clamp(31px,11vw,55px);
+  .actions{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .clockTime{
+    font-size:25px;
+  }
+
+  .timeBtn{
+    padding:9px 15px;
   }
 }
 </style>
@@ -467,151 +529,173 @@ button:disabled{
 
 <body>
 
-<header>
-  <div>
-    <h1>♟ Guest Chess</h1>
-    <div class="sub">Play • Talk • Make Friends</div>
-  </div>
+<header class="top">
+  <div class="brand">♟ Guest Chess</div>
+  <div class="sub">Play • Talk • Make Friends</div>
 
-  <div class="online">
-    <span id="dot" class="dot"></span>
-    <span id="conn">Connecting…</span>
+  <div id="status" class="status connecting">
+    <span class="statusDot"></span>
+    <span id="statusText">Connecting...</span>
   </div>
 </header>
 
-<main>
+<main class="container">
 
-<section class="card lobby">
+<div class="layout">
 
-  <div class="head">
-    <h2>🟢 Online</h2>
-    <span id="count" class="badge">0</span>
-  </div>
+<!-- GAME -->
+<div>
 
-  <div class="sub">
-    Your ID: <b id="myId">—</b>
-  </div>
+<div class="card">
 
-  <div id="players" class="list"></div>
-
-</section>
-
-
-<section class="card game">
-
-  <div class="gameTop">
-
+  <div class="gameHeader">
     <div>
-      <h2>♟ Chess</h2>
-      <div id="gameStatus" class="status">
+      <div class="title">♟ Chess</div>
+      <div class="gameInfo" id="gameInfo">
         Choose a time and challenge a player.
       </div>
     </div>
 
-    <div>
-
-      <div class="timeSelect">
-        <button class="timeBtn active" data-time="3+2">3+2</button>
-        <button class="timeBtn" data-time="5+0">5</button>
-        <button class="timeBtn" data-time="10+0">10</button>
-      </div>
-
-      <div class="clocks">
-        <span id="whiteClock" class="clock">3:00</span>
-        <span id="blackClock" class="clock">3:00</span>
-      </div>
-
+    <div class="controls">
+      <button class="timeBtn active" data-time="3+2">3+2</button>
+      <button class="timeBtn" data-time="5+0">5</button>
+      <button class="timeBtn" data-time="10+0">10</button>
     </div>
-
   </div>
 
-
-  <div class="boardShell">
+  <div class="boardWrap">
     <div id="board" class="board"></div>
   </div>
 
+  <div class="clocks">
+    <div id="whiteClock" class="clock active">
+      <div class="clockName">WHITE</div>
+      <div id="whiteTime" class="clockTime">3:00</div>
+    </div>
+
+    <div id="blackClock" class="clock">
+      <div class="clockName">BLACK</div>
+      <div id="blackTime" class="clockTime">3:00</div>
+    </div>
+  </div>
 
   <div class="actions">
-    <button id="draw" disabled>Offer Draw</button>
-    <button id="resign" class="danger" disabled>Resign</button>
-    <button id="leave" class="secondary" disabled>Leave</button>
+    <button id="drawBtn" class="action blue" disabled>Offer Draw</button>
+    <button id="resignBtn" class="action red" disabled>Resign</button>
+    <button id="leaveBtn" class="action gray" disabled>Leave</button>
+    <button id="voiceBtn" class="action green" disabled>🎙 Voice</button>
   </div>
 
+</div>
 
-  <div id="moves" class="moves"></div>
+<!-- CHAT -->
+<div class="card">
 
-</section>
+  <div class="sectionTitle">💬 Chat</div>
 
-
-<section class="card right">
-
-  <div class="head">
-    <h2>🔔 Requests</h2>
-    <span id="reqCount" class="badge">0</span>
+  <div id="chatBox" class="chatBox">
+    <div class="empty">Start a game to chat.</div>
   </div>
 
-  <div id="requests" class="list"></div>
+  <div class="chatInput">
+    <input id="chatInput" type="text" maxlength="300"
+           placeholder="Write a message..." disabled>
+    <button id="sendChat" disabled>Send</button>
+  </div>
+
+</div>
+
+</div>
 
 
-  <div class="chat">
+<!-- SIDE -->
+<div>
 
-    <div class="head">
-      <h2>💬 Chat</h2>
-    </div>
+<!-- ONLINE -->
+<div class="card">
 
-    <div id="messages" class="messages">
-      <div class="empty">
-        Start a game to chat.
-      </div>
-    </div>
+  <div class="sectionTitle">
+    🟢 Online
+    <span id="onlineCount"
+          style="float:right;background:#172d40;padding:5px 10px;border-radius:15px;font-size:14px;">
+      0
+    </span>
+  </div>
 
-    <div class="send">
-      <input id="chatInput" maxlength="300" placeholder="Message…" disabled>
-      <button id="sendChat" disabled>Send</button>
+  <div class="myid">
+    Your ID: <b id="myId">—</b>
+  </div>
+
+  <div id="players">
+    <div class="empty">Connecting...</div>
+  </div>
+
+</div>
+
+
+<!-- REQUESTS -->
+<div class="card">
+
+  <div class="sectionTitle">
+    🔔 Requests
+    <span id="reqCount"
+          style="float:right;background:#172d40;padding:5px 10px;border-radius:15px;font-size:14px;">
+      0
+    </span>
+  </div>
+
+  <div id="requests">
+    <div class="empty">No pending requests.</div>
+  </div>
+
+</div>
+
+
+<!-- VOICE -->
+<div class="card">
+
+  <div class="sectionTitle">🎙 Voice Chat</div>
+
+  <div class="voice">
+
+    <button id="startVoice">🎙 Enable Voice</button>
+    <button id="muteVoice">🔇 Mute</button>
+
+    <div id="voiceStatus" class="voiceStatus">
+      Voice is off.
     </div>
 
   </div>
 
+  <audio id="remoteAudio"
+         autoplay
+         playsinline
+         controls
+         style="width:100%;margin-top:8px;display:none;">
+  </audio>
 
-  <div style="margin-top:9px">
+</div>
 
-    <div class="head">
-      <h2>🎙️ Voice</h2>
-      <span id="voiceState" class="badge">Off</span>
-    </div>
+</div>
 
-    <div class="voiceBtns">
-      <button id="voice" disabled>Start Voice</button>
-      <button id="mute" class="secondary" disabled>Mute</button>
-    </div>
-
-    <div id="voiceHint" class="hint">
-      Both players tap Start Voice and allow microphone access.
-    </div>
-
-    <audio id="remote" autoplay playsinline preload="auto"></audio>
-
-  </div>
-
-</section>
-
+</div>
 </main>
 
 
-<div id="toast" class="toast"></div>
-
-
-<div id="promoModal" class="modal hide">
+<!-- PROMOTION -->
+<div id="promoModal" class="modal">
 
   <div class="modalBox">
 
-    <h3>Choose promotion</h3>
+    <div style="font-size:22px;font-weight:800;">
+      Choose Promotion
+    </div>
 
-    <div class="promo">
-      <button data-p="q">♕</button>
-      <button data-p="r">♖</button>
-      <button data-p="b">♗</button>
-      <button data-p="n">♘</button>
+    <div class="promoBtns">
+      <button data-piece="q">♕</button>
+      <button data-piece="r">♖</button>
+      <button data-piece="b">♗</button>
+      <button data-piece="n">♘</button>
     </div>
 
   </div>
@@ -619,10 +703,14 @@ button:disabled{
 </div>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<div id="toast" class="toast"></div>
 
 
 <script type="module">
+
+/* =========================================================
+   FIREBASE
+========================================================= */
 
 import {
   initializeApp
@@ -642,73 +730,145 @@ import {
   onValue,
   onDisconnect,
   push,
-  get
+  get,
+  remove
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 
 const firebaseConfig = {
-
-  apiKey:"AIzaSyBF6ybzGbHicPTfuDkx6OUacL_5e5OA8kc",
-
-  authDomain:"walkie-talkie-718d3.firebaseapp.com",
-
-  databaseURL:
-  "https://walkie-talkie-718d3-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-  projectId:"walkie-talkie-718d3",
-
-  storageBucket:
-  "walkie-talkie-718d3.firebasestorage.app",
-
-  messagingSenderId:"1066998245388",
-
-  appId:
-  "1:1066998245388:web:f6076fc04f262373766629",
-
-  measurementId:"G-VHM5LXX06Z"
+  apiKey: "AIzaSyBF6ybzGbHicPTfuDkx6OUacL_5e5OA8kc",
+  authDomain: "walkie-talkie-718d3.firebaseapp.com",
+  databaseURL: "https://walkie-talkie-718d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "walkie-talkie-718d3",
+  storageBucket: "walkie-talkie-718d3.firebasestorage.app",
+  messagingSenderId: "1066998245388",
+  appId: "1:1066998245388:web:f6076fc04f262373766629",
+  measurementId: "G-VHM5LXX06Z"
 };
 
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getDatabase(app);
-
-const $=id=>document.getElementById(id);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
 
-let uid="";
-let myId="";
+/* =========================================================
+   CHESS.JS
+========================================================= */
 
-let gameId="";
-let color="";
-let oppUid="";
-let oppId="";
+const chessScript = document.createElement("script");
 
-let selected=null;
-let promo=null;
+chessScript.src =
+  "https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";
 
-let gameUnsub=null;
-
-let chess=new Chess();
-
-let selectedTime="3+2";
-
-let baseSeconds=180;
-
-let whiteSec=180;
-let blackSec=180;
-
-let lastTick=0;
-
-let timer=null;
-
-let localStream=null;
-let pc=null;
-
-let muted=false;
+document.head.appendChild(chessScript);
 
 
-const P={
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let uid = null;
+let myId = null;
+
+let chess = null;
+
+let gameId = null;
+let color = null;
+
+let opponentUid = null;
+let opponentId = null;
+
+let selected = null;
+
+let selectedTime = "3+2";
+
+let baseSeconds = 180;
+
+let whiteSec = 180;
+let blackSec = 180;
+
+let lastServerTick = Date.now();
+
+let timerHandle = null;
+let gameUnsub = null;
+let chatUnsub = null;
+
+let currentGameData = null;
+
+let pendingPromotion = null;
+
+let voicePC = null;
+let localStream = null;
+let voiceStarted = false;
+let voiceMuted = false;
+
+let processedCandidates = new Set();
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const $ = id => document.getElementById(id);
+
+function esc(v){
+
+  return String(v ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+function toast(message){
+
+  const t = $("toast");
+
+  t.textContent = message;
+  t.style.display = "block";
+
+  clearTimeout(toast._timer);
+
+  toast._timer = setTimeout(()=>{
+    t.style.display = "none";
+  },3000);
+}
+
+
+/* =========================================================
+   CHESS WAIT
+========================================================= */
+
+function waitChess(){
+
+  return new Promise(resolve=>{
+
+    if(window.Chess){
+      resolve();
+      return;
+    }
+
+    const timer = setInterval(()=>{
+
+      if(window.Chess){
+        clearInterval(timer);
+        resolve();
+      }
+
+    },50);
+
+  });
+}
+
+
+/* =========================================================
+   PIECES
+========================================================= */
+
+const pieceUnicode = {
 
   w:{
     p:"♙",
@@ -731,216 +891,841 @@ const P={
 };
 
 
-const $toast=m=>{
+/* =========================================================
+   STATUS
+========================================================= */
 
-  let t=$("toast");
+function setStatus(text,type){
 
-  t.textContent=m;
+  const s = $("status");
 
-  t.classList.add("show");
+  s.className = "status " + type;
 
-  setTimeout(
-    ()=>t.classList.remove("show"),
-    2200
-  );
-
-};
+  $("statusText").textContent = text;
+}
 
 
-const newGuest=()=>{
+/* =========================================================
+   TIME CONTROL
+========================================================= */
 
-  return `Guest-${
-    Math.random()
-      .toString(36)
-      .slice(2,7)
-      .toUpperCase()
-  }`;
+document.querySelectorAll(".timeBtn").forEach(btn=>{
 
-};
+  btn.addEventListener("click",()=>{
 
+    if(gameId){
+      toast("Finish the current game first.");
+      return;
+    }
 
-const fmt=s=>{
-
-  s=Math.max(0,Math.ceil(s));
-
-  return `${Math.floor(s/60)}:${
-    String(s%60).padStart(2,"0")
-  }`;
-
-};
-
-
-document
-.querySelectorAll(".timeBtn")
-.forEach(b=>{
-
-  b.onclick=()=>{
-
-    if(gameId)return;
-
-    document
-      .querySelectorAll(".timeBtn")
+    document.querySelectorAll(".timeBtn")
       .forEach(x=>x.classList.remove("active"));
 
-    b.classList.add("active");
+    btn.classList.add("active");
 
-    selectedTime=b.dataset.time;
+    selectedTime = btn.dataset.time;
 
-    baseSeconds=
-      selectedTime==="3+2"
-      ?180
-      :selectedTime==="5+0"
-      ?300
-      :600;
+    updatePreviewClock();
 
-    whiteSec=baseSeconds;
-    blackSec=baseSeconds;
-
-    renderClocks();
-
-  };
+  });
 
 });
 
 
-function renderClocks(){
+function updatePreviewClock(){
 
-  $("whiteClock").textContent=fmt(whiteSec);
+  const sec =
+    selectedTime === "3+2"
+      ? 180
+      : selectedTime === "10+0"
+        ? 600
+        : 300;
 
-  $("blackClock").textContent=fmt(blackSec);
-
-  const active=
-    gameId &&
-    chess.turn();
-
-  $("whiteClock")
-    .classList.toggle(
-      "active",
-      active==="w"
-    );
-
-  $("blackClock")
-    .classList.toggle(
-      "active",
-      active==="b"
-    );
+  $("whiteTime").textContent = formatTime(sec);
+  $("blackTime").textContent = formatTime(sec);
 
 }
 
 
+/* =========================================================
+   AUTH
+========================================================= */
+
+async function startFirebase(){
+
+  try{
+
+    setStatus("Connecting...","connecting");
+
+    await signInAnonymously(auth);
+
+  }catch(e){
+
+    console.error("Anonymous Auth Error:",e);
+
+    setStatus("Auth Error","error");
+
+    toast(
+      "Anonymous login failed: " +
+      (e.message || "Check Firebase Authentication")
+    );
+
+  }
+
+}
+
+
+onAuthStateChanged(auth,async user=>{
+
+  try{
+
+    if(!user){
+
+      setStatus("Connecting...","connecting");
+
+      return;
+    }
+
+    uid = user.uid;
+
+    myId =
+      "Guest-" +
+      uid.slice(0,6).toUpperCase();
+
+    $("myId").textContent = myId;
+
+    setStatus("Online","online");
+
+    /* IMPORTANT:
+       update instead of set.
+       This prevents overwriting game state.
+    */
+
+    await update(
+      ref(db,`players/${uid}`),
+      {
+        guestId:myId,
+        online:true,
+        updatedAt:Date.now()
+      }
+    );
+
+
+    await onDisconnect(
+      ref(db,`players/${uid}`)
+    ).update({
+      online:false,
+      updatedAt:Date.now()
+    });
+
+
+    /* ONLINE PLAYERS */
+
+    onValue(
+      ref(db,"players"),
+      snap=>{
+        renderPlayers(snap.val() || {});
+      }
+    );
+
+
+    /* REQUESTS */
+
+    onValue(
+      ref(db,"requests"),
+      snap=>{
+        renderRequests(snap.val() || {});
+      }
+    );
+
+
+    /* ACCEPTED CHALLENGES */
+
+    watchAccepted();
+
+
+    console.log("Firebase connected:",uid);
+
+  }catch(e){
+
+    console.error("Firebase initialization error:",e);
+
+    setStatus("Firebase Error","error");
+
+    $("myId").textContent = "—";
+
+    toast(
+      "Firebase error: " +
+      (e.message || "Database permission error")
+    );
+
+  }
+
+});
+
+
+startFirebase();
+
+
+/* =========================================================
+   ONLINE PLAYERS
+========================================================= */
+
+function renderPlayers(data){
+
+  const box = $("players");
+
+  box.innerHTML = "";
+
+  const list =
+    Object.entries(data)
+      .filter(([id,p]) =>
+        id !== uid &&
+        p &&
+        p.online === true
+      );
+
+
+  $("onlineCount").textContent = list.length;
+
+
+  if(!list.length){
+
+    box.innerHTML =
+      '<div class="empty">No other guests online.</div>';
+
+    return;
+  }
+
+
+  list.forEach(([id,p])=>{
+
+    const row = document.createElement("div");
+
+    row.className = "player";
+
+    const left = document.createElement("div");
+
+    left.innerHTML = `
+      <div class="playerName">
+        🟢 ${esc(p.guestId || "Guest")}
+      </div>
+
+      <div class="playerState">
+        ${p.inGame ? "In game" : "Available"}
+      </div>
+    `;
+
+
+    const button = document.createElement("button");
+
+    button.className = "challenge";
+
+    button.textContent =
+      p.inGame ? "Busy" : "Challenge";
+
+
+    button.disabled =
+      !!p.inGame ||
+      !!gameId;
+
+
+    button.onclick = ()=>{
+      challenge(id,p.guestId || id);
+    };
+
+
+    row.append(left,button);
+
+    box.appendChild(row);
+
+  });
+
+}
+
+
+/* =========================================================
+   CHALLENGE
+========================================================= */
+
+async function challenge(targetUid,targetId){
+
+  try{
+
+    if(!uid || !targetUid){
+      toast("Not connected.");
+      return;
+    }
+
+    if(targetUid === uid){
+      toast("You cannot challenge yourself.");
+      return;
+    }
+
+    if(gameId){
+      toast("Finish the current game first.");
+      return;
+    }
+
+
+    const r =
+      push(ref(db,"requests"));
+
+
+    await set(r,{
+
+      fromUid:uid,
+      fromId:myId,
+
+      toUid:targetUid,
+      toId:targetId,
+
+      type:"chess",
+      status:"pending",
+
+      timeControl:selectedTime,
+
+      createdAt:Date.now()
+
+    });
+
+
+    toast(
+      `Challenge sent to ${targetId} • ${selectedTime}`
+    );
+
+  }catch(e){
+
+    console.error(e);
+
+    toast(
+      "Challenge failed: " +
+      (e.message || "Database error")
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   REQUESTS
+========================================================= */
+
+function renderRequests(data){
+
+  const box = $("requests");
+
+  box.innerHTML = "";
+
+
+  const list =
+    Object.entries(data || {})
+      .filter(([,r]) =>
+        r &&
+        r.status === "pending" &&
+        r.toUid === uid
+      );
+
+
+  $("reqCount").textContent = list.length;
+
+
+  if(!list.length){
+
+    box.innerHTML =
+      '<div class="empty">No pending requests.</div>';
+
+    return;
+  }
+
+
+  list.forEach(([rid,r])=>{
+
+    const row = document.createElement("div");
+
+    row.className = "req";
+
+
+    const left = document.createElement("div");
+
+    left.innerHTML = `
+      <div style="font-weight:800">
+        ${esc(r.fromId)}
+      </div>
+
+      <div style="font-size:12px;color:#92a4b0">
+        ${esc(r.timeControl || "5+0")} • chess
+      </div>
+    `;
+
+
+    const buttons =
+      document.createElement("div");
+
+    buttons.className = "reqBtns";
+
+
+    const accept =
+      document.createElement("button");
+
+    accept.className = "accept";
+    accept.textContent = "Accept";
+
+    accept.onclick = ()=>{
+      acceptChallenge(rid,r);
+    };
+
+
+    const decline =
+      document.createElement("button");
+
+    decline.className = "decline";
+    decline.textContent = "Decline";
+
+    decline.onclick = async ()=>{
+
+      await update(
+        ref(db,`requests/${rid}`),
+        {
+          status:"declined"
+        }
+      );
+
+      toast("Challenge declined.");
+
+    };
+
+
+    buttons.append(accept,decline);
+
+    row.append(left,buttons);
+
+    box.appendChild(row);
+
+  });
+
+}
+
+
+/* =========================================================
+   ACCEPT CHALLENGE
+========================================================= */
+
+async function acceptChallenge(rid,r){
+
+  try{
+
+    if(gameId){
+      toast("You are already in a game.");
+      return;
+    }
+
+
+    await waitChess();
+
+
+    const gameRef =
+      push(ref(db,"games"));
+
+    const tc =
+      r.timeControl || "5+0";
+
+
+    const sec =
+      tc === "3+2"
+        ? 180
+        : tc === "10+0"
+          ? 600
+          : 300;
+
+
+    const initial =
+      new Chess();
+
+
+    await set(gameRef,{
+
+      whiteUid:r.fromUid,
+      whiteGuest:r.fromId,
+
+      blackUid:uid,
+      blackGuest:myId,
+
+      fen:initial.fen(),
+      pgn:"",
+
+      turn:"w",
+
+      status:"playing",
+
+      timeControl:tc,
+
+      whiteTime:sec,
+      blackTime:sec,
+
+      lastTick:Date.now(),
+
+      createdAt:Date.now()
+
+    });
+
+
+    await update(
+      ref(db,`requests/${rid}`),
+      {
+        status:"accepted",
+        gameId:gameRef.key
+      }
+    );
+
+
+    await update(
+      ref(db,`players/${uid}`),
+      {
+        inGame:true,
+        gameId:gameRef.key,
+        updatedAt:Date.now()
+      }
+    );
+
+
+    joinGame(
+      gameRef.key,
+      "b",
+      r.fromUid,
+      r.fromId,
+      tc
+    );
+
+
+    toast("Game accepted.");
+
+  }catch(e){
+
+    console.error(e);
+
+    toast(
+      "Accept failed: " +
+      (e.message || "Database error")
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   WATCH ACCEPTED REQUEST
+========================================================= */
+
+function watchAccepted(){
+
+  onValue(
+    ref(db,"requests"),
+    snap=>{
+
+      const data =
+        snap.val() || {};
+
+
+      Object.entries(data).forEach(([,r])=>{
+
+        if(
+          r &&
+          r.status === "accepted" &&
+          r.gameId &&
+          r.fromUid === uid &&
+          !gameId
+        ){
+
+          joinGame(
+            r.gameId,
+            "w",
+            r.toUid,
+            r.toId,
+            r.timeControl || "5+0"
+          );
+
+        }
+
+      });
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   JOIN GAME
+========================================================= */
+
+async function joinGame(
+  gid,
+  playerColor,
+  ou,
+  oid,
+  tc
+){
+
+  await waitChess();
+
+
+  gameId = gid;
+  color = playerColor;
+
+  opponentUid = ou;
+  opponentId = oid;
+
+  selected = null;
+
+  selectedTime = tc;
+
+
+  baseSeconds =
+    tc === "3+2"
+      ? 180
+      : tc === "10+0"
+        ? 600
+        : 300;
+
+
+  whiteSec = baseSeconds;
+  blackSec = baseSeconds;
+
+
+  await update(
+    ref(db,`players/${uid}`),
+    {
+      inGame:true,
+      gameId:gid,
+      updatedAt:Date.now()
+    }
+  );
+
+
+  $("drawBtn").disabled = false;
+  $("resignBtn").disabled = false;
+  $("leaveBtn").disabled = false;
+  $("voiceBtn").disabled = false;
+
+  $("chatInput").disabled = false;
+  $("sendChat").disabled = false;
+
+
+  $("gameInfo").textContent =
+    `${color === "w" ? "You are White" : "You are Black"} • Opponent: ${opponentId} • ${tc}`;
+
+
+  chess = new Chess();
+
+
+  if(gameUnsub){
+    gameUnsub();
+  }
+
+
+  gameUnsub =
+    onValue(
+      ref(db,`games/${gid}`),
+      snap=>{
+
+        const g =
+          snap.val();
+
+
+        if(!g){
+          return;
+        }
+
+
+        currentGameData = g;
+
+
+        try{
+
+          chess.load(g.fen);
+
+        }catch(e){
+
+          console.error("FEN error:",e);
+
+          return;
+        }
+
+
+        whiteSec =
+          Number(g.whiteTime ?? baseSeconds);
+
+        blackSec =
+          Number(g.blackTime ?? baseSeconds);
+
+
+        lastServerTick =
+          Number(g.lastTick || Date.now());
+
+
+        renderBoard();
+        renderClocks();
+
+
+        if(g.status !== "playing"){
+
+          finishGame(
+            g.status,
+            false
+          );
+
+        }
+
+      }
+    );
+
+
+  if(chatUnsub){
+    chatUnsub();
+  }
+
+
+  chatUnsub =
+    onValue(
+      ref(db,`games/${gid}/chat`),
+      snap=>{
+        renderChat(snap.val() || {});
+      }
+    );
+
+
+  renderBoard();
+  renderClocks();
+
+  startTimer();
+
+  initVoice();
+
+
+  $("chatBox").innerHTML =
+    '<div class="empty">No messages yet.</div>';
+
+}
+
+
+/* =========================================================
+   BOARD
+========================================================= */
+
 function renderBoard(){
 
-  let b=$("board");
+  const board =
+    $("board");
 
-  b.innerHTML="";
+  board.innerHTML = "";
+
+
+  if(!chess){
+
+    return;
+  }
+
+
+  const moves =
+    selected
+      ? chess.moves({
+          square:selected,
+          verbose:true
+        })
+      : [];
+
+
+  const legal =
+    new Map();
+
+
+  moves.forEach(m=>{
+    legal.set(
+      m.to,
+      m.captured ? "capture" : "legal"
+    );
+  });
 
 
   for(let r=0;r<8;r++){
 
     for(let c=0;c<8;c++){
 
-      let rr=
-        color==="b"
-        ?r
-        :7-r;
-
-      let cc=
-        color==="b"
-        ?7-c
-        :c;
+      const rr =
+        color === "b"
+          ? r
+          : 7-r;
 
 
-      let sq=
-        String.fromCharCode(97+cc)
-        +(8-rr);
+      const cc =
+        color === "b"
+          ? 7-c
+          : c;
 
 
-      let e=document.createElement("div");
-
-      e.className=
-        "sq "+
-        (((rr+cc)%2===0)
-        ?"light"
-        :"dark");
+      const squareName =
+        String.fromCharCode(97+cc) +
+        (8-rr);
 
 
-      if(selected===sq){
+      const sq =
+        document.createElement("div");
 
-        e.classList.add("selected");
+
+      sq.className =
+        "square " +
+        ((r+c)%2 === 0
+          ? "light"
+          : "dark");
+
+
+      if(selected === squareName){
+        sq.classList.add("selected");
+      }
+
+
+      if(legal.has(squareName)){
+
+        sq.classList.add(
+          legal.get(squareName)
+        );
 
       }
 
 
-      if(
-        selected &&
-        chess
-          .moves({
-            square:selected,
-            verbose:true
-          })
-          .some(m=>m.to===sq)
-      ){
-
-        e.classList.add("legal");
-
-        if(chess.get(sq)){
-          e.classList.add("capture");
-        }
-
-      }
+      const piece =
+        chess.get(squareName);
 
 
-      let p=chess.get(sq);
+      if(piece){
 
+        const p =
+          document.createElement("span");
 
-      if(p){
+        p.className =
+          "piece " +
+          (piece.color === "w"
+            ? "whitePiece"
+            : "blackPiece");
 
-        let x=document.createElement("span");
+        p.textContent =
+          pieceUnicode[piece.color][piece.type];
 
-        x.className=
-          `piece ${
-            p.color==="w"
-            ?"whitePiece"
-            :"blackPiece"
-          }`;
-
-        x.textContent=P[p.color][p.type];
-
-        e.appendChild(x);
+        sq.appendChild(p);
 
       }
 
 
-      if(c===0){
-
-        let n=document.createElement("span");
-
-        n.className="coords rank";
-
-        n.textContent=8-rr;
-
-        e.appendChild(n);
-
-      }
+      sq.addEventListener(
+        "click",
+        ()=>squareClick(squareName)
+      );
 
 
-      if(rr===7){
-
-        let n=document.createElement("span");
-
-        n.className="coords file";
-
-        n.textContent=
-          String.fromCharCode(97+cc);
-
-        e.appendChild(n);
-
-      }
-
-
-      e.onclick=()=>squareClick(sq);
-
-      b.appendChild(e);
+      board.appendChild(sq);
 
     }
 
@@ -949,40 +1734,44 @@ function renderBoard(){
 }
 
 
-function squareClick(sq){
+/* =========================================================
+   SQUARE CLICK
+========================================================= */
+
+function squareClick(square){
+
+  if(!chess || !gameId){
+    return;
+  }
+
 
   if(
-    !gameId ||
-    chess.game_over()
+    currentGameData &&
+    currentGameData.status !== "playing"
   ){
     return;
   }
 
 
-  if(chess.turn()!==color){
+  if(chess.turn() !== color){
 
-    $toast("Wait for your turn");
+    toast("Wait for your turn.");
 
     return;
   }
 
 
-  const piece=chess.get(sq);
+  const piece =
+    chess.get(square);
 
 
-  /*
-    FIRST TAP
-    Select your own piece.
-  */
+  /* Nothing selected */
 
   if(!selected){
 
-    if(
-      piece &&
-      piece.color===color
-    ){
+    if(piece && piece.color === color){
 
-      selected=sq;
+      selected = square;
 
       renderBoard();
 
@@ -992,14 +1781,11 @@ function squareClick(sq){
   }
 
 
-  /*
-    TAP SAME PIECE
-    Cancel selection.
-  */
+  /* Tap same piece again */
 
-  if(sq===selected){
+  if(selected === square){
 
-    selected=null;
+    selected = null;
 
     renderBoard();
 
@@ -1007,17 +1793,11 @@ function squareClick(sq){
   }
 
 
-  /*
-    TAP ANOTHER OWN PIECE
-    Change selection.
-  */
+  /* Tap another own piece */
 
-  if(
-    piece &&
-    piece.color===color
-  ){
+  if(piece && piece.color === color){
 
-    selected=sq;
+    selected = square;
 
     renderBoard();
 
@@ -1025,137 +1805,201 @@ function squareClick(sq){
   }
 
 
-  /*
-    SECOND TAP
-    Must be a legal destination.
-  */
+  /* Check legal move */
 
-  const legal=
+  const legal =
     chess.moves({
       square:selected,
       verbose:true
     });
 
 
-  const m=
-    legal.find(x=>x.to===sq);
+  const move =
+    legal.find(
+      m=>m.to === square
+    );
 
 
-  if(!m){
+  if(!move){
 
-    $toast("Illegal move");
+    toast("Illegal move.");
 
     return;
   }
 
 
-  /*
-    PROMOTION
-  */
+  /* Promotion */
 
-  if(m.flags.includes("p")){
+  if(move.flags.includes("p")){
 
-    promo={
+    pendingPromotion = {
       from:selected,
-      to:sq
+      to:square
     };
 
-    $("promoModal")
-      .classList.remove("hide");
+    $("promoModal").style.display = "flex";
 
     return;
   }
 
 
-  move(selected,sq);
+  makeMove(
+    selected,
+    square,
+    null
+  );
 
 }
 
 
-async function move(
+/* =========================================================
+   PROMOTION
+========================================================= */
+
+document.querySelectorAll(
+  ".promoBtns button"
+).forEach(btn=>{
+
+  btn.addEventListener("click",()=>{
+
+    if(!pendingPromotion){
+      return;
+    }
+
+
+    const p =
+      btn.dataset.piece;
+
+
+    const from =
+      pendingPromotion.from;
+
+    const to =
+      pendingPromotion.to;
+
+
+    $("promoModal").style.display =
+      "none";
+
+
+    pendingPromotion = null;
+
+
+    makeMove(
+      from,
+      to,
+      p
+    );
+
+  });
+
+});
+
+
+/* =========================================================
+   MAKE MOVE
+========================================================= */
+
+async function makeMove(
   from,
   to,
-  promotion="q"
+  promotion
 ){
 
-  if(
-    !gameId ||
-    chess.turn()!==color
-  ){
+  if(!chess || !gameId){
     return;
   }
 
 
-  const legal=
-    chess.moves({
-      square:from,
-      verbose:true
-    })
-    .find(x=>x.to===to);
+  if(chess.turn() !== color){
+    return;
+  }
 
 
-  if(!legal)return;
+  let move;
 
 
-  const m=
-    chess.move({
-      from,
-      to,
-      promotion
-    });
+  try{
+
+    move =
+      chess.move({
+        from,
+        to,
+        promotion:promotion || "q"
+      });
+
+  }catch(e){
+
+    toast("Illegal move.");
+
+    return;
+  }
 
 
-  if(!m)return;
+  if(!move){
+
+    toast("Illegal move.");
+
+    return;
+  }
+
+
+  selected = null;
+
+
+  let w =
+    Number(
+      currentGameData?.whiteTime ??
+      whiteSec
+    );
+
+
+  let b =
+    Number(
+      currentGameData?.blackTime ??
+      blackSec
+    );
 
 
   /*
-    3+2 INCREMENT
-
-    Clock starts at 3:00.
-    After every legal move:
-    mover gets +2 seconds.
+    Add 2 seconds after the move
+    in 3+2.
   */
 
-  if(selectedTime==="3+2"){
+  if(selectedTime === "3+2"){
 
-    if(color==="w"){
-      whiteSec+=2;
+    if(color === "w"){
+      w += 2;
     }else{
-      blackSec+=2;
+      b += 2;
     }
 
   }
 
 
-  selected=null;
-
-  await syncGame();
-
-  renderBoard();
-
-  renderClocks();
-
-}
+  const gameOver =
+    chess.isGameOver();
 
 
-async function syncGame(){
-
-  if(!gameId)return;
+  let status = "playing";
 
 
-  lastTick=Date.now();
+  if(chess.isCheckmate()){
 
+    status =
+      color === "w"
+        ? "white_win"
+        : "black_win";
 
-  let status="playing";
+  }
+  else if(
+    chess.isDraw() ||
+    chess.isStalemate() ||
+    chess.isThreefoldRepetition() ||
+    chess.isInsufficientMaterial()
+  ){
 
-
-  if(chess.game_over()){
-
-    if(chess.isCheckmate()){
-      status="checkmate";
-    }else{
-      status="draw";
-    }
+    status = "draw";
 
   }
 
@@ -1170,1491 +2014,966 @@ async function syncGame(){
 
       turn:chess.turn(),
 
-      whiteTime:
-        Math.max(
-          0,
-          Math.ceil(whiteSec)
-        ),
+      whiteTime:w,
 
-      blackTime:
-        Math.max(
-          0,
-          Math.ceil(blackSec)
-        ),
+      blackTime:b,
 
-      lastTick,
+      lastTick:Date.now(),
 
-      status,
-
-      lastMoveAt:Date.now()
+      status
 
     }
   );
 
+}
 
-  $("moves").textContent=
-    chess
-      .history()
-      .map(
-        (m,i)=>
-          (i%2===0
-            ?`${i/2+1}. `
-            :""
-          )+m
-      )
-      .join(" ");
+
+/* =========================================================
+   CLOCK
+========================================================= */
+
+function formatTime(sec){
+
+  sec = Math.max(0,Math.floor(sec));
+
+  const m =
+    Math.floor(sec/60);
+
+  const s =
+    sec % 60;
+
+  return (
+    m +
+    ":" +
+    String(s).padStart(2,"0")
+  );
+
+}
+
+
+function renderClocks(){
+
+  $("whiteTime").textContent =
+    formatTime(whiteSec);
+
+  $("blackTime").textContent =
+    formatTime(blackSec);
+
+
+  $("whiteClock")
+    .classList.toggle(
+      "active",
+      chess &&
+      chess.turn() === "w"
+    );
+
+
+  $("blackClock")
+    .classList.toggle(
+      "active",
+      chess &&
+      chess.turn() === "b"
+    );
 
 }
 
 
 function startTimer(){
 
-  clearInterval(timer);
+  clearInterval(timerHandle);
 
 
-  timer=setInterval(async()=>{
+  timerHandle =
+    setInterval(async()=>{
 
-    if(
-      !gameId ||
-      chess.game_over()
-    ){
-      return;
-    }
+      if(
+        !gameId ||
+        !chess ||
+        !currentGameData ||
+        currentGameData.status !== "playing"
+      ){
 
+        return;
 
-    const now=Date.now();
-
-
-    const d=
-      Math.max(
-        0,
-        (now-lastTick)/1000
-      );
+      }
 
 
-    lastTick=now;
+      const now =
+        Date.now();
 
 
-    /*
-      Only the current player loses time.
-    */
-
-    if(chess.turn()==="w"){
-
-      whiteSec=
+      const elapsed =
         Math.max(
           0,
-          whiteSec-d
-        );
-
-    }else{
-
-      blackSec=
-        Math.max(
-          0,
-          blackSec-d
-        );
-
-    }
-
-
-    renderClocks();
-
-
-    const left=
-      chess.turn()==="w"
-      ?whiteSec
-      :blackSec;
-
-
-    /*
-      Only the player whose
-      browser is active writes timeout.
-    */
-
-    if(left<=0){
-
-      const loser=chess.turn();
-
-
-      await update(
-        ref(db,`games/${gameId}`),
-        {
-
-          status:"timeout",
-
-          winner=
-            loser==="w"
-            ?"b"
-            :"w",
-
-          whiteTime:
-            Math.max(
-              0,
-              Math.ceil(whiteSec)
-            ),
-
-          blackTime:
-            Math.max(
-              0,
-              Math.ceil(blackSec)
-            ),
-
-          lastTick:Date.now()
-
-        }
-      );
-
-
-      clearInterval(timer);
-
-    }
-
-  },250);
-
-}
-
-
-function renderPlayers(data){
-
-  let box=$("players");
-
-  box.innerHTML="";
-
-
-  let list=
-    Object.entries(data||{})
-    .filter(
-      ([id,p])=>
-        id!==uid &&
-        p.online
-    );
-
-
-  $("count").textContent=list.length;
-
-
-  if(!list.length){
-
-    box.innerHTML=
-      '<div class="empty">No other guests online.</div>';
-
-    return;
-
-  }
-
-
-  list.forEach(([id,p])=>{
-
-    let row=document.createElement("div");
-
-    row.className="row";
-
-
-    row.innerHTML=`
-
-      <div>
-
-        <div class="name">
-          🟢 ${esc(p.guestId)}
-        </div>
-
-        <div class="small">
-          ${p.inGame?"In game":"Available"}
-        </div>
-
-      </div>
-
-    `;
-
-
-    let b=document.createElement("button");
-
-    b.textContent="Challenge";
-
-    b.disabled=
-      !!gameId ||
-      !!p.inGame;
-
-
-    b.onclick=
-      ()=>challenge(
-        id,
-        p.guestId
-      );
-
-
-    row.appendChild(b);
-
-    box.appendChild(row);
-
-  });
-
-}
-
-
-async function challenge(
-  t,
-  id
-){
-
-  try{
-
-    if(
-      !uid ||
-      !t ||
-      t===uid
-    ){
-
-      $toast("Invalid player");
-
-      return;
-
-    }
-
-
-    if(gameId){
-
-      $toast(
-        "Finish the current game first."
-      );
-
-      return;
-
-    }
-
-
-    const r=
-      push(
-        ref(db,"requests")
-      );
-
-
-    await set(
-      r,
-      {
-
-        fromUid:uid,
-
-        fromId:myId,
-
-        toUid:t,
-
-        toId:id,
-
-        type:"chess",
-
-        status:"pending",
-
-        timeControl:selectedTime,
-
-        createdAt:Date.now()
-
-      }
-    );
-
-
-    $toast(
-      `Challenge sent to ${id} • ${selectedTime}`
-    );
-
-
-  }catch(e){
-
-    console.error(e);
-
-    $toast(
-      "Challenge failed: "+
-      (e.message||
-      "Database permission error")
-    );
-
-  }
-
-}
-
-
-function renderRequests(data){
-
-  let box=$("requests");
-
-  box.innerHTML="";
-
-
-  let list=
-    Object.entries(data||{})
-    .filter(
-      ([,r])=>
-        r.status==="pending" &&
-        r.toUid===uid
-    );
-
-
-  $("reqCount").textContent=list.length;
-
-
-  if(!list.length){
-
-    box.innerHTML=
-      '<div class="empty">No pending requests.</div>';
-
-    return;
-
-  }
-
-
-  list.forEach(([rid,r])=>{
-
-    let row=document.createElement("div");
-
-    row.className="row";
-
-
-    row.innerHTML=`
-
-      <div>
-
-        <div class="name">
-          ${esc(r.fromId)}
-        </div>
-
-        <div class="small">
-          ${r.timeControl||"5+0"} • chess
-        </div>
-
-      </div>
-
-    `;
-
-
-    let a=document.createElement("button");
-
-    a.className="success";
-
-    a.textContent="Accept";
-
-    a.onclick=
-      ()=>accept(rid,r);
-
-
-    let d=document.createElement("button");
-
-    d.className="secondary";
-
-    d.textContent="Decline";
-
-    d.onclick=
-      ()=>update(
-        ref(db,`requests/${rid}`),
-        {status:"declined"}
-      );
-
-
-    let x=document.createElement("div");
-
-    x.style.display="flex";
-
-    x.style.gap="4px";
-
-    x.append(a,d);
-
-    row.appendChild(x);
-
-    box.appendChild(row);
-
-  });
-
-}
-
-
-async function accept(
-  rid,
-  r
-){
-
-  try{
-
-    /*
-      Create game immediately.
-    */
-
-    let g=
-      push(
-        ref(db,"games")
-      );
-
-
-    let tc=
-      r.timeControl||"5+0";
-
-
-    /*
-      Correct starting clocks:
-      3+2 = 3:00
-      5+0 = 5:00
-      10+0 = 10:00
-    */
-
-    let sec=
-      tc==="3+2"
-      ?180
-      :tc==="10+0"
-      ?600
-      :300;
-
-
-    await set(
-      g,
-      {
-
-        whiteUid:r.fromUid,
-
-        whiteGuest:r.fromId,
-
-        blackUid:uid,
-
-        blackGuest:myId,
-
-        fen:new Chess().fen(),
-
-        pgn:"",
-
-        turn:"w",
-
-        status:"playing",
-
-        timeControl:tc,
-
-        whiteTime:sec,
-
-        blackTime:sec,
-
-        lastTick:Date.now(),
-
-        createdAt:Date.now()
-
-      }
-    );
-
-
-    /*
-      Mark request accepted.
-    */
-
-    await update(
-      ref(db,`requests/${rid}`),
-      {
-        status:"accepted",
-        gameId:g.key
-      }
-    );
-
-
-    /*
-      Acceptor updates only
-      his own player record.
-    */
-
-    await update(
-      ref(db,`players/${uid}`),
-      {
-        inGame:true,
-        gameId:g.key
-      }
-    );
-
-
-    /*
-      Acceptor = BLACK.
-    */
-
-    joinGame(
-      g.key,
-      "b",
-      r.fromUid,
-      r.fromId,
-      tc
-    );
-
-
-  }catch(e){
-
-    console.error(e);
-
-    $toast(
-      "Accept failed: "+
-      (e.message||
-      "Database permission error")
-    );
-
-  }
-
-}
-
-
-function watchAccepted(){
-
-  onValue(
-    ref(db,"requests"),
-    s=>{
-
-      Object
-        .values(s.val()||{})
-        .forEach(r=>{
-
-          /*
-            Challenger becomes WHITE.
-          */
-
-          if(
-            r.status==="accepted" &&
-            r.gameId &&
-            r.fromUid===uid &&
-            !gameId
-          ){
-
-            joinGame(
-              r.gameId,
-              "w",
-              r.toUid,
-              r.toId,
-              r.timeControl||"5+0"
-            );
-
-          }
-
-        });
-
-    }
-  );
-
-}
-
-
-function joinGame(
-  g,
-  c,
-  ou,
-  oid,
-  tc
-){
-
-  gameId=g;
-
-  color=c;
-
-  oppUid=ou;
-
-  oppId=oid;
-
-  selected=null;
-
-  selectedTime=tc;
-
-
-  update(
-    ref(db,`players/${uid}`),
-    {
-      inGame:true,
-      gameId:g
-    }
-  );
-
-
-  baseSeconds=
-    tc==="3+2"
-    ?180
-    :tc==="10+0"
-    ?600
-    :300;
-
-
-  chess=new Chess();
-
-  whiteSec=baseSeconds;
-
-  blackSec=baseSeconds;
-
-  lastTick=Date.now();
-
-
-  document
-    .querySelectorAll(".timeBtn")
-    .forEach(
-      x=>
-        x.classList.toggle(
-          "active",
-          x.dataset.time===tc
-        )
-    );
-
-
-  $("gameStatus").textContent=
-    `vs ${oppId} • ${tc} • You are ${
-      c==="w"
-      ?"White"
-      :"Black"
-    }`;
-
-
-  [
-    "draw",
-    "resign",
-    "leave",
-    "voice",
-    "mute"
-  ]
-  .forEach(
-    id=>$(id).disabled=false
-  );
-
-
-  $("chatInput").disabled=false;
-
-  $("sendChat").disabled=false;
-
-
-  if(gameUnsub){
-    gameUnsub();
-  }
-
-
-  gameUnsub=
-    onValue(
-      ref(db,`games/${g}`),
-      s=>{
-
-        let x=s.val();
-
-        if(!x)return;
-
-
-        /*
-          Read server clock.
-        */
-
-        let elapsed=
-          x.status==="playing"
-          ?(Date.now()-x.lastTick)/1000
-          :0;
-
-
-        whiteSec=
-          Number(
-            x.whiteTime||baseSeconds
-          );
-
-
-        blackSec=
-          Number(
-            x.blackTime||baseSeconds
-          );
-
-
-        if(x.turn==="w"){
-
-          whiteSec-=elapsed;
-
-        }else{
-
-          blackSec-=elapsed;
-
-        }
-
-
-        /*
-          Never let timer go negative.
-        */
-
-        whiteSec=
-          Math.max(0,whiteSec);
-
-        blackSec=
-          Math.max(0,blackSec);
-
-
-        chess.load(x.fen);
-
-
-        lastTick=Date.now();
-
-
-        renderBoard();
-
-        renderClocks();
-
-
-        $("moves").textContent=
-          chess
-            .history()
-            .map(
-              (m,i)=>
-                (i%2===0
-                  ?`${i/2+1}. `
-                  :""
-                )+m
+          (now -
+            Number(
+              currentGameData.lastTick ||
+              now
             )
-            .join(" ");
+          ) / 1000
+        );
 
 
-        if(x.status!=="playing"){
+      let w =
+        Number(
+          currentGameData.whiteTime ??
+          baseSeconds
+        );
 
-          $("gameStatus").textContent=
-            `Game ended: ${x.status}`;
 
-          clearInterval(timer);
+      let b =
+        Number(
+          currentGameData.blackTime ??
+          baseSeconds
+        );
 
-        }else{
 
-          $("gameStatus").textContent=
-            `vs ${oppId} • ${
-              x.timeControl||tc
-            } • You are ${
-              color==="w"
-              ?"White"
-              :"Black"
-            } • ${
-              x.turn===color
-              ?"Your turn"
-              :"Opponent's turn"
-            }`;
+      if(chess.turn() === "w"){
 
-        }
+        w =
+          Math.max(
+            0,
+            w-elapsed
+          );
+
+      }else{
+
+        b =
+          Math.max(
+            0,
+            b-elapsed
+          );
 
       }
-    );
 
 
-  /*
-    CHAT
-  */
-
-  onValue(
-    ref(db,`games/${g}/chat`),
-    s=>{
-
-      let box=$("messages");
-
-      box.innerHTML="";
+      whiteSec = w;
+      blackSec = b;
 
 
-      Object
-        .values(s.val()||{})
-        .sort(
-          (a,b)=>a.at-b.at
-        )
-        .forEach(m=>{
-
-          let d=
-            document.createElement("div");
-
-          d.className="msg";
-
-          d.innerHTML=
-            `<b>${esc(m.fromId)}</b>: ${
-              esc(m.text)
-            }`;
-
-          box.appendChild(d);
-
-        });
+      renderClocks();
 
 
-      box.scrollTop=
-        box.scrollHeight;
+      /*
+        Only update timeout when
+        the displayed side reaches zero.
+      */
 
-    }
-  );
+      if(w <= 0 || b <= 0){
+
+        const status =
+          w <= 0
+            ? "black_win_timeout"
+            : "white_win_timeout";
 
 
-  renderBoard();
+        await update(
+          ref(db,`games/${gameId}`),
+          {
+            whiteTime:w,
+            blackTime:b,
+            lastTick:now,
+            status
+          }
+        );
 
-  renderClocks();
+      }
 
-  startTimer();
+    },250);
 
 }
 
 
-const esc=s=>
-  String(s??"")
-  .replace(
-    /[&<>"']/g,
-    c=>({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#39;"
-    }[c])
+/* =========================================================
+   GAME FINISH
+========================================================= */
+
+function finishGame(status,write){
+
+  clearInterval(timerHandle);
+
+
+  $("drawBtn").disabled = true;
+  $("resignBtn").disabled = true;
+  $("voiceBtn").disabled = false;
+
+
+  let message = "";
+
+
+  if(status === "white_win"){
+    message = "White wins by checkmate.";
+  }
+  else if(status === "black_win"){
+    message = "Black wins by checkmate.";
+  }
+  else if(status === "draw"){
+    message = "Game drawn.";
+  }
+  else if(status === "white_win_timeout"){
+    message = "White wins on time.";
+  }
+  else if(status === "black_win_timeout"){
+    message = "Black wins on time.";
+  }
+  else if(status === "white_resign"){
+    message = "Black wins — White resigned.";
+  }
+  else if(status === "black_resign"){
+    message = "White wins — Black resigned.";
+  }
+  else{
+    message = "Game finished.";
+  }
+
+
+  toast(message);
+
+  $("gameInfo").textContent =
+    message +
+    " • Opponent: " +
+    opponentId;
+
+}
+
+
+/* =========================================================
+   RESIGN
+========================================================= */
+
+$("resignBtn").onclick =
+async()=>{
+
+  if(!gameId){
+    return;
+  }
+
+
+  if(!confirm("Resign this game?")){
+    return;
+  }
+
+
+  const status =
+    color === "w"
+      ? "white_resign"
+      : "black_resign";
+
+
+  await update(
+    ref(db,`games/${gameId}`),
+    {
+      status,
+      lastTick:Date.now()
+    }
+  );
+
+};
+
+
+/* =========================================================
+   DRAW
+========================================================= */
+
+$("drawBtn").onclick =
+async()=>{
+
+  if(!gameId){
+    return;
+  }
+
+
+  await update(
+    ref(db,`games/${gameId}`),
+    {
+      drawOfferBy:uid,
+      drawOfferAt:Date.now()
+    }
   );
 
 
-async function leaveGame(){
+  toast("Draw offer sent.");
 
-  if(!gameId)return;
+};
+
+
+/* =========================================================
+   LEAVE
+========================================================= */
+
+$("leaveBtn").onclick =
+async()=>{
+
+  if(!gameId){
+    return;
+  }
+
+
+  if(!confirm("Leave this game?")){
+    return;
+  }
+
+
+  const oldGame =
+    gameId;
+
+
+  clearInterval(timerHandle);
 
 
   await update(
     ref(db,`players/${uid}`),
     {
       inGame:false,
-      gameId:null
+      gameId:null,
+      updatedAt:Date.now()
     }
   );
 
 
-  clearInterval(timer);
+  if(gameUnsub){
+    gameUnsub();
+    gameUnsub = null;
+  }
 
 
-  if(pc){
+  if(chatUnsub){
+    chatUnsub();
+    chatUnsub = null;
+  }
 
-    pc.close();
 
-    pc=null;
+  stopVoice();
+
+
+  gameId = null;
+  color = null;
+  opponentUid = null;
+  opponentId = null;
+  chess = null;
+  selected = null;
+  currentGameData = null;
+
+
+  $("drawBtn").disabled = true;
+  $("resignBtn").disabled = true;
+  $("leaveBtn").disabled = true;
+  $("voiceBtn").disabled = true;
+
+  $("chatInput").disabled = true;
+  $("sendChat").disabled = true;
+
+
+  $("gameInfo").textContent =
+    "Choose a time and challenge a player.";
+
+
+  $("chatBox").innerHTML =
+    '<div class="empty">Start a game to chat.</div>';
+
+
+  updatePreviewClock();
+
+  renderBoard();
+
+
+  toast("You left the game.");
+
+};
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+function renderChat(data){
+
+  const box =
+    $("chatBox");
+
+
+  box.innerHTML = "";
+
+
+  const list =
+    Object.values(data || {})
+      .sort(
+        (a,b)=>
+          Number(a.time||0) -
+          Number(b.time||0)
+      );
+
+
+  if(!list.length){
+
+    box.innerHTML =
+      '<div class="empty">No messages yet.</div>';
+
+    return;
+  }
+
+
+  list.forEach(m=>{
+
+    const div =
+      document.createElement("div");
+
+    div.className = "msg";
+
+
+    div.innerHTML = `
+      <div class="msgName">
+        ${esc(m.guestId || "Guest")}
+      </div>
+
+      <div class="msgText">
+        ${esc(m.text)}
+      </div>
+    `;
+
+
+    box.appendChild(div);
+
+  });
+
+
+  box.scrollTop =
+    box.scrollHeight;
+
+}
+
+
+async function sendMessage(){
+
+  if(!gameId){
+    return;
+  }
+
+
+  const input =
+    $("chatInput");
+
+
+  const text =
+    input.value.trim();
+
+
+  if(!text){
+    return;
+  }
+
+
+  const r =
+    push(
+      ref(db,`games/${gameId}/chat`)
+    );
+
+
+  await set(r,{
+
+    guestId:myId,
+
+    uid,
+
+    text,
+
+    time:Date.now()
+
+  });
+
+
+  input.value = "";
+
+}
+
+
+$("sendChat").onclick =
+sendMessage;
+
+
+$("chatInput").addEventListener(
+  "keydown",
+  e=>{
+
+    if(e.key === "Enter"){
+      sendMessage();
+    }
 
   }
+);
+
+
+/* =========================================================
+   VOICE CHAT
+========================================================= */
+
+async function initVoice(){
+
+  /*
+    We do not automatically request microphone
+    permission because mobile browsers often
+    require a user gesture.
+  */
+
+  $("voiceStatus").textContent =
+    "Tap Enable Voice to start voice chat.";
+
+}
+
+
+async function createVoiceConnection(){
+
+  if(!gameId){
+    return;
+  }
+
+
+  if(voicePC){
+    return voicePC;
+  }
+
+
+  voicePC =
+    new RTCPeerConnection({
+
+      iceServers:[
+        {
+          urls:"stun:stun.l.google.com:19302"
+        },
+        {
+          urls:"stun:stun1.l.google.com:19302"
+        }
+      ]
+
+    });
+
+
+  voicePC.onicecandidate =
+  async event=>{
+
+    if(!event.candidate){
+      return;
+    }
+
+
+    const key =
+      push(
+        ref(
+          db,
+          `games/${gameId}/voice/candidates/${uid}`
+        )
+      ).key;
+
+
+    await set(
+      ref(
+        db,
+        `games/${gameId}/voice/candidates/${uid}/${key}`
+      ),
+      event.candidate.toJSON()
+    );
+
+  };
+
+
+  voicePC.ontrack =
+  event=>{
+
+    const audio =
+      $("remoteAudio");
+
+
+    audio.style.display =
+      "block";
+
+
+    audio.srcObject =
+      event.streams[0];
+
+
+    audio.muted = false;
+    audio.volume = 1;
+
+
+    audio.play()
+      .catch(()=>{
+        $("voiceStatus").textContent =
+          "Tap the audio player to start sound.";
+      });
+
+  };
 
 
   if(localStream){
 
     localStream
       .getTracks()
-      .forEach(
-        t=>t.stop()
-      );
-
-    localStream=null;
-
-  }
-
-
-  gameId="";
-
-  color="";
-
-  oppUid="";
-
-  oppId="";
-
-
-  chess=new Chess();
-
-  selected=null;
-
-
-  [
-    "draw",
-    "resign",
-    "leave",
-    "voice",
-    "mute"
-  ]
-  .forEach(
-    id=>$(id).disabled=true
-  );
-
-
-  $("chatInput").disabled=true;
-
-  $("sendChat").disabled=true;
-
-
-  $("voiceState").textContent="Off";
-
-  $("voice").textContent="Start Voice";
-
-
-  $("gameStatus").textContent=
-    "Choose a time and challenge a player.";
-
-
-  renderBoard();
-
-  renderClocks();
-
-}
-
-
-$("leave").onclick=leaveGame;
-
-
-$("resign").onclick=
-  async()=>{
-
-    if(gameId){
-
-      await update(
-        ref(db,`games/${gameId}`),
-        {
-          status:"resigned",
-          winner:
-            color==="w"
-            ?"b"
-            :"w"
-        }
-      );
-
-      leaveGame();
-
-    }
-
-  };
-
-
-$("draw").onclick=()=>{
-
-  $toast("Draw offer sent");
-
-  if(gameId){
-
-    update(
-      ref(db,`games/${gameId}`),
-      {
-        drawOffer:uid
-      }
-    );
+      .forEach(track=>{
+        voicePC.addTrack(
+          track,
+          localStream
+        );
+      });
 
   }
 
-};
 
+  /* Watch opponent candidates */
 
-$("sendChat").onclick=sendChat;
-
-
-$("chatInput").onkeydown=e=>{
-
-  if(e.key==="Enter"){
-
-    sendChat();
-
-  }
-
-};
-
-
-async function sendChat(){
-
-  let i=$("chatInput");
-
-  let t=i.value.trim();
-
-
-  if(!t || !gameId)return;
-
-
-  await set(
-    push(
-      ref(db,`games/${gameId}/chat`)
+  onValue(
+    ref(
+      db,
+      `games/${gameId}/voice/candidates/${opponentUid}`
     ),
-    {
-      fromId:myId,
-      text:t,
-      at:Date.now()
+    async snap=>{
+
+      const data =
+        snap.val() || {};
+
+
+      for(
+        const [key,candidate]
+        of Object.entries(data)
+      ){
+
+        const unique =
+          opponentUid + ":" + key;
+
+
+        if(processedCandidates.has(unique)){
+          continue;
+        }
+
+
+        processedCandidates.add(unique);
+
+
+        try{
+
+          await voicePC.addIceCandidate(
+            new RTCIceCandidate(candidate)
+          );
+
+        }catch(e){
+
+          console.warn(
+            "ICE candidate error",
+            e
+          );
+
+        }
+
+      }
+
     }
   );
 
 
-  i.value="";
+  return voicePC;
 
 }
-
-
-$("promoModal")
-.querySelectorAll("button")
-.forEach(b=>{
-
-  b.onclick=()=>{
-
-    let p=b.dataset.p;
-
-    $("promoModal")
-      .classList.add("hide");
-
-
-    if(promo){
-
-      move(
-        promo.from,
-        promo.to,
-        p
-      );
-
-      promo=null;
-
-    }
-
-  };
-
-});
-
-
-$("voice").onclick=startVoice;
-
-
-$("mute").onclick=()=>{
-
-  muted=!muted;
-
-
-  (
-    localStream?.getAudioTracks()||[]
-  )
-  .forEach(
-    t=>t.enabled=!muted
-  );
-
-
-  $("mute").textContent=
-    muted
-    ?"Unmute"
-    :"Mute";
-
-};
 
 
 async function startVoice(){
 
+  if(!gameId){
+
+    toast("Start a game first.");
+
+    return;
+  }
+
+
   try{
 
-    localStream=
-      await navigator
-      .mediaDevices
-      .getUserMedia({
+    if(!navigator.mediaDevices ||
+       !navigator.mediaDevices.getUserMedia){
 
-        audio:{
-          echoCancellation:true,
-          noiseSuppression:true,
-          autoGainControl:true
-        }
+      toast("Microphone is not supported.");
 
-      });
+      return;
+    }
 
 
-    pc=
-      new RTCPeerConnection({
+    if(!localStream){
 
-        iceServers:[
+      localStream =
+        await navigator.mediaDevices.getUserMedia({
 
-          {
-            urls:
-            "stun:stun.l.google.com:19302"
+          audio:{
+            echoCancellation:true,
+            noiseSuppression:true,
+            autoGainControl:true
           },
 
-          {
-            urls:
-            "stun:stun1.l.google.com:19302"
-          }
+          video:false
 
-        ]
-
-      });
-
-
-    localStream
-      .getTracks()
-      .forEach(
-        t=>pc.addTrack(t,localStream)
-      );
-
-
-    pc.ontrack=async e=>{
-
-      const audio=$("remote");
-
-
-      audio.autoplay=true;
-
-      audio.playsInline=true;
-
-      audio.muted=false;
-
-      audio.volume=1;
-
-
-      audio.srcObject=
-        e.streams &&
-        e.streams[0]
-        ?e.streams[0]
-        :new MediaStream([e.track]);
-
-
-      try{
-
-        await audio.play();
-
-        $("voiceState").textContent=
-          "🔊 Audio Connected";
-
-      }catch(err){
-
-        $("voiceState").textContent=
-          "Tap to hear";
-
-        $toast(
-          "Remote audio ready — tap Voice again."
-        );
-
-      }
-
-    };
-
-
-    pc.onconnectionstatechange=()=>{
-
-      const st=pc.connectionState;
-
-
-      if(st==="connected"){
-
-        $("voiceState").textContent=
-          "Connected";
-
-      }else if(
-        st==="failed" ||
-        st==="disconnected"
-      ){
-
-        $("voiceState").textContent=
-          "Disconnected";
-
-      }else{
-
-        $("voiceState").textContent=st;
-
-      }
-
-    };
-
-
-    pc.oniceconnectionstatechange=()=>{
-
-      if(
-        pc.iceConnectionState==="failed"
-      ){
-
-        $("voiceState").textContent=
-          "Network failed";
-
-        $toast(
-          "Voice network connection failed."
-        );
-
-      }
-
-    };
-
-
-    const base=
-      `games/${gameId}/voice`;
-
-
-    if(color==="w"){
-
-      pc.onicecandidate=e=>{
-
-        if(e.candidate){
-
-          push(
-            ref(
-              db,
-              `${base}/callerCandidates`
-            ),
-            e.candidate.toJSON()
-          );
-
-        }
-
-      };
-
-
-      const offer=
-        await pc.createOffer({
-          offerToReceiveAudio:true
         });
 
+    }
 
-      await pc.setLocalDescription(offer);
+
+    const pc =
+      await createVoiceConnection();
+
+
+    voiceStarted = true;
+
+
+    $("voiceStatus").textContent =
+      "Voice enabled. Connecting...";
+
+
+    /*
+      White creates offer.
+      Black waits for offer.
+    */
+
+    if(color === "w"){
+
+      const offer =
+        await pc.createOffer();
+
+
+      await pc.setLocalDescription(
+        offer
+      );
 
 
       await set(
-        ref(db,`${base}/offer`),
+        ref(
+          db,
+          `games/${gameId}/voice/offer`
+        ),
         {
           type:offer.type,
-          sdp:offer.sdp,
-          createdAt:Date.now()
+          sdp:offer.sdp
         }
       );
 
 
       onValue(
-        ref(db,`${base}/answer`),
+        ref(
+          db,
+          `games/${gameId}/voice/answer`
+        ),
         async snap=>{
 
+          const answer =
+            snap.val();
+
+
           if(
-            snap.exists() &&
+            answer &&
             !pc.currentRemoteDescription
           ){
 
-            await pc.setRemoteDescription(
-              snap.val()
-            );
+            try{
 
-          }
-
-        }
-      );
-
-
-      onValue(
-        ref(db,`${base}/calleeCandidates`),
-        snap=>{
-
-          snap.forEach(x=>{
-
-            pc
-              .addIceCandidate(x.val())
-              .catch(()=>{});
-
-          });
-
-        }
-      );
-
-
-    }else{
-
-      onValue(
-        ref(db,`${base}/offer`),
-        async snap=>{
-
-          if(
-            !snap.exists() ||
-            pc.currentRemoteDescription
-          ){
-            return;
-          }
-
-
-          await pc.setRemoteDescription(
-            snap.val()
-          );
-
-
-          pc.onicecandidate=e=>{
-
-            if(e.candidate){
-
-              push(
-                ref(
-                  db,
-                  `${base}/calleeCandidates`
-                ),
-                e.candidate.toJSON()
+              await pc.setRemoteDescription(
+                new RTCSessionDescription(answer)
               );
 
+
+              $("voiceStatus").textContent =
+                "Voice connected.";
+
+            }catch(e){
+
+              console.error(e);
+
             }
 
-          };
-
-
-          const answer=
-            await pc.createAnswer({
-              offerToReceiveAudio:true
-            });
-
-
-          await pc.setLocalDescription(
-            answer
-          );
-
-
-          await set(
-            ref(db,`${base}/answer`),
-            {
-              type:answer.type,
-              sdp:answer.sdp,
-              createdAt:Date.now()
-            }
-          );
+          }
 
         }
       );
 
+    }
+    else{
 
       onValue(
-        ref(db,`${base}/callerCandidates`),
-        snap=>{
+        ref(
+          db,
+          `games/${gameId}/voice/offer`
+        ),
+        async snap=>{
 
-          snap.forEach(x=>{
+          const offer =
+            snap.val();
 
-            pc
-              .addIceCandidate(x.val())
-              .catch(()=>{});
 
-          });
+          if(
+            offer &&
+            !pc.currentRemoteDescription
+          ){
+
+            try{
+
+              await pc.setRemoteDescription(
+                new RTCSessionDescription(offer)
+              );
+
+
+              const answer =
+                await pc.createAnswer();
+
+
+              await pc.setLocalDescription(
+                answer
+              );
+
+
+              await set(
+                ref(
+                  db,
+                  `games/${gameId}/voice/answer`
+                ),
+                {
+                  type:answer.type,
+                  sdp:answer.sdp
+                }
+              );
+
+
+              $("voiceStatus").textContent =
+                "Voice connected.";
+
+            }catch(e){
+
+              console.error(e);
+
+            }
+
+          }
 
         }
       );
 
     }
 
+  }catch(e){
 
-    $("voice").disabled=true;
+    console.error(
+      "Voice error:",
+      e
+    );
 
-    $("voice").textContent=
-      "Voice On";
 
-    $("mute").disabled=false;
+    $("voiceStatus").textContent =
+      "Microphone error: " +
+      (e.message || "Permission denied");
 
-    $("voiceState").textContent=
-      "Connecting…";
 
+    toast(
+      "Allow microphone permission."
+    );
+
+  }
+
+}
+
+
+async function stopVoice(){
+
+  try{
+
+    if(localStream){
+
+      localStream
+        .getTracks()
+        .forEach(t=>t.stop());
+
+    }
+
+    localStream = null;
+
+
+    if(voicePC){
+
+      voicePC.close();
+
+    }
+
+    voicePC = null;
+
+    voiceStarted = false;
+
+
+    $("voiceStatus").textContent =
+      "Voice is off.";
+
+
+    $("remoteAudio").srcObject =
+      null;
+
+
+    $("remoteAudio").style.display =
+      "none";
 
   }catch(e){
 
     console.error(e);
 
-    $("voiceState").textContent=
-      "Error";
-
-    $toast(
-      "Voice failed: "+
-      (
-        e.message||
-        "Allow microphone permission."
-      )
-    );
-
   }
 
 }
 
 
-onAuthStateChanged(
-  auth,
-  async u=>{
-
-    if(!u)return;
+$("startVoice").onclick =
+startVoice;
 
 
-    uid=u.uid;
+$("voiceBtn").onclick =
+startVoice;
 
 
-    let p=
-      await get(
-        ref(db,`players/${uid}`)
-      );
+$("muteVoice").onclick =
+()=>{
+
+  if(!localStream){
+
+    toast("Voice is not enabled.");
+
+    return;
+  }
 
 
-    myId=
-      p.exists()
-      ?p.val().guestId
-      :newGuest();
+  voiceMuted =
+    !voiceMuted;
 
 
-    await set(
-      ref(db,`players/${uid}`),
-      {
-        guestId:myId,
-        online:true,
-        inGame:false,
-        updatedAt:Date.now()
-      }
-    );
-
-
-    onDisconnect(
-      ref(db,`players/${uid}`)
-    )
-    .update({
-      online:false,
-      inGame:false
+  localStream
+    .getAudioTracks()
+    .forEach(t=>{
+      t.enabled =
+        !voiceMuted;
     });
 
 
-    $("myId").textContent=myId;
+  $("muteVoice").textContent =
+    voiceMuted
+      ? "🔊 Unmute"
+      : "🔇 Mute";
 
-    $("dot").classList.add("ok");
-
-    $("conn").textContent="Online";
-
-
-    /*
-      ONLINE PLAYERS
-    */
-
-    onValue(
-      ref(db,"players"),
-      s=>
-        renderPlayers(s.val()),
-      e=>{
-
-        $("count").textContent="!";
-
-        $("players").innerHTML=
-          `<div class="empty">
-            Online list error:
-            ${esc(
-              e.message||
-              "Database access denied"
-            )}
-          </div>`;
-
-      }
-    );
+};
 
 
-    /*
-      CHALLENGE REQUESTS
-    */
+/* =========================================================
+   INITIAL
+========================================================= */
 
-    onValue(
-      ref(db,"requests"),
-      s=>
-        renderRequests(s.val()),
-      e=>{
-
-        $("requests").innerHTML=
-          `<div class="empty">
-            Request access error:
-            ${esc(
-              e.message||
-              "database access denied"
-            )}
-          </div>`;
-
-      }
-    );
+updatePreviewClock();
 
 
-    /*
-      ACCEPTED CHALLENGES
-    */
+/* Prevent accidental page scrolling while
+   touching chess board */
 
-    watchAccepted();
-
-
-    renderBoard();
-
-    renderClocks();
-
-  }
+$("board").addEventListener(
+  "touchstart",
+  e=>{},
+  {passive:true}
 );
-
-
-signInAnonymously(auth)
-.catch(e=>{
-
-  $("conn").textContent=
-    "Auth setup required";
-
-  $toast(
-    "Enable Anonymous Authentication in Firebase."
-  );
-
-});
 
 </script>
 

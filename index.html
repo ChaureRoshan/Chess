@@ -203,25 +203,32 @@ button:disabled{
   border-radius:8px;
   background:#08131b;
 }
-
+      
 .board{
   width:100%;
-  aspect-ratio:1/1;
+  aspect-ratio:1 / 1;
   display:grid;
   grid-template-columns:repeat(8,1fr);
-  border-radius:4px;
+  grid-template-rows:repeat(8,1fr);
   overflow:hidden;
+  border-radius:4px;
+  touch-action:manipulation;
 }
 
 .square{
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
   position:relative;
   display:flex;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   user-select:none;
   -webkit-user-select:none;
   touch-action:manipulation;
 }
+
 
 .light{
   background:#eeeed2;
@@ -234,9 +241,12 @@ button:disabled{
 .piece{
   position:relative;
   z-index:2;
-  font-family:"Segoe UI Symbol","Arial Unicode MS",serif;
-  font-size:clamp(31px,7vw,64px);
+  font-family:"Segoe UI Symbol",
+              "Arial Unicode MS",
+              serif;
+  font-size:clamp(30px,7vw,64px);
   line-height:1;
+  pointer-events:none;
 }
 
 .whitePiece{

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Guest Chess</title>
+<style>
+:root{--bg:#07111d;--panel:#0d1927;--line:#203247;--text:#e7edf5;--muted:#91a4b8;--blue:#1683ff;--green:#36d275}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{height:64px;padding:10px 18px;background:#0a1724;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+h1{font-size:21px;margin:0}.sub{font-size:11px;color:var(--muted)}
+.online{font-size:12px;display:flex;gap:7px;align-items:center}.dot{width:9px;height:9px;border-radius:50%;background:#f59e0b}.dot.ok{background:var(--green)}
+main{width:100%;max-width:1500px;margin:12px auto;padding:0 8px;display:grid;grid-template-columns:210px minmax(0,1fr) 210px;gap:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.game{padding:8px;min-width:0}
+.head,.gameTop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+h2{font-size:15px;margin:0}.badge{background:#172638;border-radius:15px;padding:3px 8px;font-size:10px}
+.list{margin-top:9px}.row{background:#091421;border:1px solid #1b2b3d;border-radius:8px;padding:8px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:6px}.name{font-size:12px;font-weight:700}.small{font-size:10px;color:var(--muted);margin-top:2px}
+button{border:0;border-radius:7px;background:var(--blue);color:white;padding:7px 9px;font-weight:700;font-size:11px;cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#304154}.danger{background:#b4232c}.success{background:#138a4a}
+.timeSelect{display:flex;gap:5px}.timeBtn{background:#16283b;border:1px solid #2b425a}.timeBtn.active{background:var(--blue);border-color:var(--blue)}
+.gameTop{margin-bottom:7px}.status{font-size:11px;color:var(--muted);margin-top:2px}.clocks{display:flex;gap:5px}.clock{font:700 13px ui-monospace,monospace;background:#08121e;border:1px solid #253a50;padding:5px 8px;border-radius:7px}.clock.active{border-color:#1683ff;color:#fff}
+.boardWrap{width:100%;display:flex;justify-content:center}.board{width:min(100%,760px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);border:2px solid #31465b;border-radius:4px;overflow:hidden;touch-action:manipulation}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;font-size:clamp(30px,7.3vw,66px);user-select:none;cursor:pointer}.light{background:#f0d9b5}.dark{background:#b58863}.selected{outline:4px solid #facc15;outline-offset:-4px}.legal:after{content:"";width:18%;height:18%;border-radius:50%;background:#0006;position:absolute}
+.actions{display:flex;gap:6px;margin-top:7px}.actions button{flex:1}.moves{margin-top:7px;max-height:80px;overflow:auto;font:10px/1.5 ui-monospace,monospace;color:#b7c6d7}
+.empty,.hint{font-size:11px;color:#71869c;padding:6px 0}.chat{margin-top:10px}.messages{height:120px;overflow:auto;background:#091421;border:1px solid #1d3044;border-radius:7px;padding:7px;margin-top:7px}.msg{font-size:11px;margin:4px 0}.msg b{color:#73b7ff}.send{display:flex;gap:5px;margin-top:5px}.send input{min-width:0;flex:1;background:#091421;border:1px solid #2a4056;color:#fff;border-radius:7px;padding:7px;font-size:11px}
+.voiceBtns{display:flex;gap:5px;margin-top:7px}.voiceBtns button{flex:1}.toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,20px);opacity:0;background:#02070d;border:1px solid #334b64;padding:9px 13px;border-radius:8px;font-size:12px;transition:.2s;z-index:30}.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:20}.hide{display:none}.modalBox{background:#0d1927;border:1px solid #31465b;border-radius:12px;padding:18px}.promo{display:flex;gap:8px}.promo button{font-size:28px;width:55px;height:55px;background:#1b2c40}
+@media(max-width:900px){main{grid-template-columns:170px minmax(0,1fr) 170px;padding:0 5px;gap:5px}.card{padding:7px}}
+@media(max-width:700px){header{height:58px;padding:8px 11px}main{display:flex;flex-direction:column;padding:4px}.game{order:1}.lobby{order:2}.right{order:3}.board{width:100%;border-width:1px}.sq{font-size:clamp(30px,11vw,54px)}.lobby,.right{display:block}.clocks{gap:3px}.clock{font-size:11px;padding:4px 6px}}
+</style>
+</head>
+<body>
+<header>
+ <div><h1>♟ Guest Chess</h1><div class="sub">Play • Talk • Make Friends</div></div>
+ <div class="online"><span id="dot" class="dot"></span><span id="conn">Connecting…</span></div>
+</header>
+
+<main>
+<section class="card lobby">
+ <div class="head"><h2>🟢 Online</h2><span id="count" class="badge">0</span></div>
+ <div class="sub">Your ID: <b id="myId">—</b></div>
+ <div class="list" id="players"></div>
+</section>
+
+<section class="card game">
+ <div class="gameTop">
+  <div><h2>♟ Chess</h2><div id="gameStatus" class="status">Choose a time and challenge a player.</div></div>
+  <div>
+   <div class="timeSelect">
+    <button class="timeBtn active" data-time="3+2">3+2</button>
+    <button class="timeBtn" data-time="5+0">5</button>
+    <button class="timeBtn" data-time="10+0">10</button>
+   </div>
+   <div class="clocks" style="margin-top:4px"><span id="whiteClock" class="clock">5:00</span><span id="blackClock" class="clock">5:00</span></div>
+  </div>
+ </div>
+ <div class="boardWrap"><div id="board" class="board"></div></div>
+ <div class="actions"><button id="draw" disabled>Offer Draw</button><button id="resign" class="danger" disabled>Resign</button><button id="leave" class="secondary" disabled>Leave</button></div>
+ <div id="moves" class="moves"></div>
+</section>
+
+<section class="card right">
+ <div class="head"><h2>🔔 Requests</h2><span id="reqCount" class="badge">0</span></div>
+ <div id="requests" class="list"></div>
+
+ <div class="chat"><div class="head"><h2>💬 Chat</h2></div>
+ <div id="messages" class="messages"><div class="empty">Start a game to chat.</div></div>
+ <div class="send"><input id="chatInput" maxlength="300" placeholder="Message…" disabled><button id="sendChat" disabled>Send</button></div></div>
+
+ <div style="margin-top:10px"><div class="head"><h2>🎙️ Voice</h2><span id="voiceState" class="badge">Off</span></div>
+ <div class="voiceBtns"><button id="voice" disabled>Start Voice</button><button id="mute" class="secondary" disabled>Mute</button></div>
+ <div class="hint">WebRTC voice. Allow microphone access.</div><audio id="remote" autoplay playsinline></audio></div>
+</section>
+</main>
+
+<div id="toast" class="toast"></div>
+<div id="promoModal" class="modal hide"><div class="modalBox"><h3>Choose promotion</h3><div class="promo"><button data-p="q">♕</button><button data-p="r">♖</button><button data-p="b">♗</button><button data-p="n">♘</button></div></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,signInAnonymously,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getDatabase,ref,set,update,onValue,onDisconnect,push,get}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyBF6ybzGbHicPTfuDkx6OUacL_5e5OA8kc",authDomain:"walkie-talkie-718d3.firebaseapp.com",databaseURL:"https://walkie-talkie-718d3-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"walkie-talkie-718d3",storageBucket:"walkie-talkie-718d3.firebasestorage.app",messagingSenderId:"1066998245388",appId:"1:1066998245388:web:f6076fc04f262373766629",measurementId:"G-VHM5LXX06Z"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),$=id=>document.getElementById(id);
+let uid="",myId="",gameId="",color="",oppUid="",oppId="",selected=null,promo=null,gameUnsub=null;
+let chess=new Chess(),selectedTime="3+2",baseSeconds=182,whiteSec=182,blackSec=182,lastTick=0,timer=null,localStream=null,pc=null,muted=false;
+const P={w:{p:"♙",n:"♘",b:"♗",r:"♖",q:"♕",k:"♔"},b:{p:"♟",n:"♞",b:"♝",r:"♜",q:"♛",k:"♚"}};
+const toast=m=>{let t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)};
+const gid=()=>`Guest-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
+const fmt=s=>`${Math.floor(Math.max(0,s)/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
+
+document.querySelectorAll(".timeBtn").forEach(b=>b.onclick=()=>{if(gameId)return;document.querySelectorAll(".timeBtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");selectedTime=b.dataset.time;baseSeconds=selectedTime==="3+2"?182:selectedTime==="5+0"?300:600;whiteSec=blackSec=baseSeconds;renderClocks()});
+function renderClocks(){ $("whiteClock").textContent=fmt(whiteSec);$("blackClock").textContent=fmt(blackSec);$("whiteClock").classList.toggle("active",gameId&&chess.turn()==="w");$("blackClock").classList.toggle("active",gameId&&chess.turn()==="b") }
+function renderBoard(){let b=$("board");b.innerHTML="";for(let r=0;r<8;r++)for(let c=0;c<8;c++){let rr=color==="b"?r:7-r,cc=color==="b"?7-c:c,sq=String.fromCharCode(97+cc)+(8-rr),e=document.createElement("div");e.className="sq "+(((rr+cc)%2===0)?"light":"dark");if(selected===sq)e.classList.add("selected");if(selected&&chess.moves({square:selected,verbose:true}).some(m=>m.to===sq))e.classList.add("legal");let p=chess.get(sq);if(p){let x=document.createElement("span");x.textContent=P[p.color][p.type];e.appendChild(x)}e.onclick=()=>squareClick(sq);b.appendChild(e)}}
+function squareClick(sq){if(!gameId||chess.game_over()||chess.turn()!==color)return;let p=chess.get(sq);if(selected){let m=chess.moves({square:selected,verbose:true}).find(x=>x.to===sq);if(m){if(m.flags.includes("p")){promo={from:selected,to:sq};$("promoModal").classList.remove("hide");return}move(selected,sq)}else{selected=p&&p.color===color?sq:null;renderBoard()}}else if(p&&p.color===color){selected=sq;renderBoard()}}
+async function move(from,to,promotion="q"){let m=chess.move({from,to,promotion});if(!m)return;selected=null;let inc=selectedTime==="3+2"?2:0;if(color==="w")whiteSec+=inc;else blackSec+=inc;await syncGame();renderBoard();renderClocks()}
+async function syncGame(){lastTick=Date.now();await update(ref(db,`games/${gameId}`),{fen:chess.fen(),pgn:chess.pgn(),turn:chess.turn(),whiteTime:Math.ceil(whiteSec),blackTime:Math.ceil(blackSec),lastTick,status:chess.game_over()?(chess.isCheckmate()?"checkmate":"draw"):"playing"});$("moves").textContent=chess.history().map((m,i)=>(i%2===0?`${i/2+1}. `:"")+m).join(" ")}
+function startTimer(){clearInterval(timer);timer=setInterval(async()=>{if(!gameId||chess.game_over())return;let now=Date.now(),d=(now-lastTick)/1000;lastTick=now;if(chess.turn()==="w")whiteSec-=d;else blackSec-=d;renderClocks();let left=chess.turn()==="w"?whiteSec:blackSec;if(left<=0){whiteSec=Math.max(0,whiteSec);blackSec=Math.max(0,blackSec);await update(ref(db,`games/${gameId}`),{status:"timeout",winner:chess.turn()==="w"?"b":"w",whiteTime:Math.ceil(whiteSec),blackTime:Math.ceil(blackSec),lastTick:Date.now()});clearInterval(timer)}},250)}
+function renderPlayers(data){let box=$("players");box.innerHTML="";let list=Object.entries(data||{}).filter(([id,p])=>id!==uid&&p.online);$("count").textContent=list.length;if(!list.length){box.innerHTML='<div class="empty">No other guests online.</div>';return}list.forEach(([id,p])=>{let row=document.createElement("div");row.className="row";row.innerHTML=`<div><div class="name">🟢 ${p.guestId}</div><div class="small">${p.inGame?"In game":"Available"}</div></div>`;let b=document.createElement("button");b.textContent="Challenge";b.disabled=!!gameId||!!p.inGame;b.onclick=()=>challenge(id,p.guestId);row.appendChild(b);box.appendChild(row)})}
+async function challenge(targetUid,targetId){let r=push(ref(db,`requests/${targetUid}`));await set(r,{fromUid:uid,fromId:myId,type:"chess",status:"pending",timeControl:selectedTime,createdAt:Date.now()});toast(`Challenge sent to ${targetId} • ${selectedTime}`)}
+function renderRequests(data){let box=$("requests");box.innerHTML="";let list=Object.entries(data||{}).filter(([,r])=>r.status==="pending");$("reqCount").textContent=list.length;if(!list.length){box.innerHTML='<div class="empty">No pending requests.</div>';return}list.forEach(([rid,r])=>{let row=document.createElement("div");row.className="row";row.innerHTML=`<div><div class="name">${r.fromId}</div><div class="small">${r.timeControl||"5+0"} • chess</div></div>`;let a=document.createElement("button");a.className="success";a.textContent="Accept";a.onclick=()=>accept(rid,r);let d=document.createElement("button");d.className="secondary";d.textContent="Decline";d.onclick=()=>update(ref(db,`requests/${uid}/${rid}`),{status:"declined"});let x=document.createElement("div");x.style.display="flex";x.style.gap="4px";x.append(a,d);row.appendChild(x);box.appendChild(row)})}
+async function accept(rid,r){let g=push(ref(db,"games")),tc=r.timeControl||"5+0",sec=tc==="3+2"?182:tc==="10+0"?600:300;await set(g,{whiteUid:r.fromUid,whiteGuest:r.fromId,blackUid:uid,blackGuest:myId,fen:new Chess().fen(),pgn:"",turn:"w",status:"playing",timeControl:tc,whiteTime:sec,blackTime:sec,lastTick:Date.now(),createdAt:Date.now()});await update(ref(db,`requests/${uid}/${rid}`),{status:"accepted",gameId:g.key});await update(ref(db,`players/${uid}`),{inGame:true,gameId:g.key});joinGame(g.key,"b",r.fromUid,r.fromId,tc)}
+function watchAccepted(){onValue(ref(db,`requests/${uid}`),s=>{Object.values(s.val()||{}).forEach(r=>{if(r.status==="accepted"&&r.gameId&&!gameId)joinGame(r.gameId,"w",r.fromUid,r.fromId,r.timeControl||"5+0")})})}
+function joinGame(g,c,ou,oid,tc){gameId=g;color=c;oppUid=ou;oppId=oid;selected=null;selectedTime=tc;baseSeconds=tc==="3+2"?182:tc==="10+0"?600:300;chess=new Chess();whiteSec=blackSec=baseSeconds;lastTick=Date.now();document.querySelectorAll(".timeBtn").forEach(x=>x.classList.toggle("active",x.dataset.time===tc));$("gameStatus").textContent=`vs ${oppId} • ${tc} • You are ${c==="w"?"White":"Black"}`;["draw","resign","leave","voice","mute"].forEach(id=>$(id).disabled=false);$("chatInput").disabled=false;$("sendChat").disabled=false;if(gameUnsub)gameUnsub();gameUnsub=onValue(ref(db,`games/${g}`),s=>{let x=s.val();if(!x)return;let now=Date.now(),elapsed=x.status==="playing"?(now-x.lastTick)/1000:0;whiteSec=Number(x.whiteTime||baseSeconds);blackSec=Number(x.blackTime||baseSeconds);if(x.turn==="w")whiteSec-=elapsed;else blackSec-=elapsed;chess.load(x.fen);lastTick=now;renderBoard();renderClocks();$("moves").textContent=chess.history().map((m,i)=>(i%2===0?`${i/2+1}. `:"")+m).join(" ");if(x.status!=="playing")$("gameStatus").textContent=`Game ended: ${x.status}${x.winner?` • ${x.winner===color?"You win":"You lose"}`:""}`});onValue(ref(db,`games/${g}/chat`),s=>{let box=$("messages");box.innerHTML="";Object.values(s.val()||{}).sort((a,b)=>a.at-b.at).forEach(m=>{let d=document.createElement("div");d.className="msg";d.innerHTML=`<b>${esc(m.fromId)}</b>: ${esc(m.text)}`;box.appendChild(d)});box.scrollTop=box.scrollHeight});renderBoard();startTimer()}
+const esc=s=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function leaveGame(){if(!gameId)return;await update(ref(db,`players/${uid}`),{inGame:false,gameId:null});clearInterval(timer);if(pc){pc.close();pc=null}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}gameId="";color="";oppUid="";oppId="";chess=new Chess();selected=null;["draw","resign","leave","voice","mute"].forEach(id=>$(id).disabled=true);$("chatInput").disabled=true;$("sendChat").disabled=true;$("voiceState").textContent="Off";$("gameStatus").textContent="Choose a time and challenge a player.";renderBoard();renderClocks()}
+$("leave").onclick=leaveGame;$("resign").onclick=async()=>{if(gameId){await update(ref(db,`games/${gameId}`),{status:"resigned",winner:color==="w"?"b":"w"});leaveGame()}};$("draw").onclick=()=>toast("Draw offer UI is ready to extend with accept/decline.");$("sendChat").onclick=sendChat;$("chatInput").onkeydown=e=>{if(e.key==="Enter")sendChat()};async function sendChat(){let i=$("chatInput"),t=i.value.trim();if(!t||!gameId)return;await set(push(ref(db,`games/${gameId}/chat`)),{fromId:myId,text:t,at:Date.now()});i.value=""}
+$("promoModal").querySelectorAll("button").forEach(b=>b.onclick=()=>{let p=b.dataset.p;$("promoModal").classList.add("hide");if(promo){move(promo.from,promo.to,p);promo=null}});
+$("voice").onclick=startVoice;$("mute").onclick=()=>{muted=!muted;(localStream?.getAudioTracks()||[]).forEach(t=>t.enabled=!muted);$("mute").textContent=muted?"Unmute":"Mute"};
+async function startVoice(){try{localStream=await navigator.mediaDevices.getUserMedia({audio:true});pc=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));pc.ontrack=e=>$("remote").srcObject=e.streams[0];let base=`games/${gameId}/voice`;if(color==="w"){pc.onicecandidate=e=>e.candidate&&push(ref(db,`${base}/callerCandidates`),e.candidate.toJSON());let o=await pc.createOffer();await pc.setLocalDescription(o);await set(ref(db,`${base}/offer`),{type:o.type,sdp:o.sdp});onValue(ref(db,`${base}/answer`),async s=>{if(s.exists()&&!pc.currentRemoteDescription)await pc.setRemoteDescription(s.val())});onValue(ref(db,`${base}/calleeCandidates`),s=>s.forEach(x=>pc.addIceCandidate(x.val()).catch(()=>{})))}else{onValue(ref(db,`${base}/offer`),async s=>{if(!s.exists()||pc.currentRemoteDescription)return;await pc.setRemoteDescription(s.val());pc.onicecandidate=e=>e.candidate&&push(ref(db,`${base}/calleeCandidates`),e.candidate.toJSON());let a=await pc.createAnswer();await pc.setLocalDescription(a);await set(ref(db,`${base}/answer`),{type:a.type,sdp:a.sdp})});onValue(ref(db,`${base}/callerCandidates`),s=>s.forEach(x=>pc.addIceCandidate(x.val()).catch(()=>{})))}$("voice").disabled=true;$("mute").disabled=false;$("voiceState").textContent="Connecting…"}catch(e){toast("Microphone permission required")}}
+onAuthStateChanged(auth,async u=>{if(!u)return;uid=u.uid;let p=await get(ref(db,`players/${uid}`));myId=p.exists()?p.val().guestId:gid();await set(ref(db,`players/${uid}`),{guestId:myId,online:true,inGame:false,updatedAt:Date.now()});onDisconnect(ref(db,`players/${uid}`)).update({online:false,inGame:false});$("myId").textContent=myId;$("dot").classList.add("ok");$("conn").textContent="Online";onValue(ref(db,"players"),s=>renderPlayers(s.val()));onValue(ref(db,`requests/${uid}`),s=>renderRequests(s.val()));watchAccepted();renderBoard();renderClocks()});
+signInAnonymously(auth).catch(e=>{console.error(e);$("conn").textContent="Auth setup required";toast("Enable Anonymous Authentication in Firebase.")});
+</script>
+</body>
+</html>

@@ -2333,58 +2333,37 @@ function clickSquare(square){
   }
 
 
-  const moves =
-    chess.moves({
-      square:selectedSquare,
-      verbose:true
-    });
+  const legalMoves = chess.moves({
+  verbose: true
+});
 
+const move = legalMoves.find(m =>
+  m.from === selectedSquare &&
+  m.to === square
+);
 
-  const move =
-    moves.find(
-      x=>x.to === square
-    );
-
-
-  if(!move){
-
-    toast("Illegal move.");
-
-    return;
-
-  }
-
-
-  if(
-    move.flags.includes("p")
-  ){
-
-    promotionMove = {
-
-      from:selectedSquare,
-
-      to:square
-
-    };
-
-
-    $("promotionModal")
-      .style.display =
-      "flex";
-
-
-    return;
-
-  }
-
-
-  makeMove(
-    selectedSquare,
-    square,
-    null
-  );
-
+if(!move){
+  toast("Illegal move.");
+  return;
 }
+
+if(move.flags && move.flags.includes("p")){
+
+  promotionMove = {
+    from: selectedSquare,
+    to: square
+  };
+
+  $("promotionModal").style.display = "flex";
+
+  return;
+}
+
+makeMove(
+  selectedSquare,
+  square,
+  null
+);
 
 
 /* =========================================================
@@ -2565,68 +2544,183 @@ async function makeMove(
     if(myColor === "w"){
       w += 2;
     }else{
-      b += 2;
+async function makeMove(from, to, promotion){
+
+  if(!gameId || !chess || !gameData){
+    return;
+  }
+
+  if(chess.turn() !== myColor){
+    toast("Wait for your turn.");
+    return;
+  }
+
+  // Verify the exact move
+  const legalMoves = chess.moves({
+    verbose:true
+  });
+
+  const legalMove = legalMoves.find(m =>
+    m.from === from &&
+    m.to === to
+  );
+
+  if(!legalMove){
+    toast("Illegal move.");
+    return;
+  }
+
+  let move;
+
+  try{
+
+    move = chess.move({
+      from: from,
+      to: to,
+      promotion: promotion || "q"
+    });
+
+  }catch(error){
+
+    console.error("Move error:", error);
+    toast("Move failed.");
+    return;
+  }
+
+  if(!move){
+    toast("Move failed.");
+    return;
+  }
+
+  // IMPORTANT:
+  // Immediately remove selection and redraw board.
+  selectedSquare = null;
+
+  renderBoard();
+
+  /*
+    Calculate the time used by the player
+    from the authoritative Firebase timestamp.
+  */
+
+  let whiteRemaining =
+    Number(gameData.whiteTime || 0);
+
+  let blackRemaining =
+    Number(gameData.blackTime || 0);
+
+  const lastTick =
+    Number(
+      gameData.lastTick || Date.now()
+    );
+
+  const elapsed =
+    Math.max(
+      0,
+      (Date.now() - lastTick) / 1000
+    );
+
+  if(myColor === "w"){
+
+    whiteRemaining =
+      Math.max(
+        0,
+        whiteRemaining - elapsed
+      );
+
+  }else{
+
+    blackRemaining =
+      Math.max(
+        0,
+        blackRemaining - elapsed
+      );
+
+  }
+
+  // 3+2 increment
+  if(selectedTime === "3+2"){
+
+    if(myColor === "w"){
+      whiteRemaining += 2;
+    }else{
+      blackRemaining += 2;
     }
 
   }
 
+  let status = "playing";
 
-  let status =
-    "playing";
-
-
-  if(
-    chess.isCheckmate()
-  ){
+  if(chess.isCheckmate()){
 
     status =
       myColor === "w"
         ? "white_win"
         : "black_win";
 
-  }
-  else if(
+  }else if(
     chess.isDraw() ||
     chess.isStalemate() ||
     chess.isThreefoldRepetition() ||
     chess.isInsufficientMaterial()
   ){
 
-    status =
-      "draw";
-
+    status = "draw";
   }
 
+  /*
+    Update local data immediately.
+    This prevents the old Firebase snapshot
+    from temporarily putting the pawn back.
+  */
 
-  await update(
-    ref(db,`games/${gameId}`),
-    {
+  gameData = {
+    ...gameData,
 
-      fen:
-        chess.fen(),
+    fen: chess.fen(),
+    pgn: chess.pgn(),
+    turn: chess.turn(),
+    whiteTime: whiteRemaining,
+    blackTime: blackRemaining,
+    lastTick: Date.now(),
+    status: status
+  };
 
-      pgn:
-        chess.pgn(),
+  whiteTime = whiteRemaining;
+  blackTime = blackRemaining;
 
-      turn:
-        chess.turn(),
+  renderBoard();
+  renderTimers();
 
-      whiteTime:
-        w,
+  // Now sync with Firebase
+  try{
 
-      blackTime:
-        b,
+    await update(
+      ref(db, `games/${gameId}`),
+      {
+        fen: chess.fen(),
+        pgn: chess.pgn(),
+        turn: chess.turn(),
+        whiteTime: whiteRemaining,
+        blackTime: blackRemaining,
+        lastTick: Date.now(),
+        status: status
+      }
+    );
 
-      lastTick:
-        Date.now(),
+  }catch(error){
 
-      status
+    console.error(
+      "Firebase move sync error:",
+      error
+    );
 
-    }
-  );
+    toast(
+      "Move made locally, but sync failed."
+    );
 
+  }
 }
-
 
 /* =========================================================
    TIMERS

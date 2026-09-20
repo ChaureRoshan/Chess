@@ -4,202 +4,2659 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Guest Chess</title>
+
 <style>
-:root{--bg:#08131f;--panel:#0d1b29;--line:#26394d;--text:#eef3f8;--muted:#91a4b8;--blue:#1683ff;--green:#36d275;--light:#eeeed2;--dark:#769656}
+:root{
+  --bg:#08131f;
+  --panel:#0d1b29;
+  --line:#26394d;
+  --text:#eef3f8;
+  --muted:#91a4b8;
+  --blue:#1683ff;
+  --green:#36d275;
+  --light:#eeeed2;
+  --dark:#769656;
+}
+
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,#07111c,#0b1724);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{height:62px;padding:9px 16px;background:#091622;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
-h1{font-size:21px;margin:0}.sub{font-size:11px;color:var(--muted)}
-.online{display:flex;align-items:center;gap:7px;font-size:12px}.dot{width:9px;height:9px;border-radius:50%;background:#f59e0b}.dot.ok{background:var(--green)}
-main{width:100%;max-width:1450px;margin:10px auto;padding:0 7px;display:grid;grid-template-columns:190px minmax(0,1fr) 190px;gap:7px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px}.game{padding:7px;min-width:0}
-.head,.gameTop{display:flex;justify-content:space-between;align-items:center;gap:7px}h2{font-size:15px;margin:0}.badge{background:#17283a;border-radius:15px;padding:3px 8px;font-size:10px}
-.list{margin-top:8px}.row{background:#091520;border:1px solid #203246;border-radius:7px;padding:7px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:5px}.name{font-size:12px;font-weight:700}.small{font-size:10px;color:var(--muted);margin-top:2px}
-button{border:0;border-radius:7px;background:var(--blue);color:#fff;padding:7px 9px;font-weight:700;font-size:11px;cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}.secondary{background:#304255}.danger{background:#a92331}.success{background:#158a4c}
-.timeSelect{display:flex;gap:4px}.timeBtn{background:#172a3e;border:1px solid #2c455d;font-size:12px;padding:7px 12px}.timeBtn.active{background:var(--blue);border-color:#4aa0ff}
-.clocks{display:flex;gap:4px;margin-top:4px}.clock{font:700 13px ui-monospace,monospace;background:#07111c;border:1px solid #2a4057;padding:4px 8px;border-radius:6px}.clock.active{border-color:#1683ff}
-.status{font-size:11px;color:var(--muted);margin-top:2px}
-.boardShell{width:100%;display:flex;justify-content:center;padding:4px;background:#03080d;border:2px solid #32495e;border-radius:6px;margin-top:6px;box-shadow:0 4px 18px #0007}
-.board{width:min(100%,780px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border:3px solid #111820;outline:1px solid #60748a;border-radius:2px;overflow:hidden}
-.sq{position:relative;display:flex;align-items:center;justify-content:center;font-size:clamp(30px,7vw,66px);line-height:1;user-select:none;cursor:pointer}
-.light{background:var(--light)}.dark{background:var(--dark)}
-.piece{font-family:"Times New Roman","DejaVu Serif",serif;font-weight:700;line-height:1;filter:drop-shadow(0 1px 1px #0008)}
-.whitePiece{color:#fff;text-shadow:-1px -1px 0 #111,1px -1px 0 #111,-1px 1px 0 #111,1px 1px 0 #111,0 2px 2px #0008}
-.blackPiece{color:#111;text-shadow:0 1px 1px #fff6}
-.selected{outline:4px solid #f6d84a;outline-offset:-4px}.legal:after{content:"";width:17%;height:17%;border-radius:50%;background:#1118;position:absolute}.capture:after{content:"";position:absolute;inset:5%;border:4px solid #1118;border-radius:50%}
-.coords{position:absolute;font-size:9px;font-family:system-ui;font-weight:700;opacity:.8;pointer-events:none}.file{right:3px;bottom:1px}.rank{left:3px;top:1px}
-.actions{display:flex;gap:5px;margin-top:6px}.actions button{flex:1}.moves{margin-top:6px;max-height:65px;overflow:auto;font:10px/1.5 ui-monospace,monospace;color:#b9c8d8}
-.chat{margin-top:9px}.messages{height:115px;overflow:auto;background:#08131f;border:1px solid #20354a;border-radius:7px;padding:6px;margin-top:6px}.msg{font-size:11px;margin:4px 0}.msg b{color:#74b9ff}.send{display:flex;gap:4px;margin-top:4px}.send input{min-width:0;flex:1;background:#08131f;border:1px solid #2a4057;color:#fff;border-radius:7px;padding:7px;font-size:11px}
-.voiceBtns{display:flex;gap:4px;margin-top:6px}.voiceBtns button{flex:1}.hint,.empty{font-size:10px;color:#71869c;padding:5px 0}
-.toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,20px);opacity:0;background:#02070d;border:1px solid #3a536c;padding:9px 13px;border-radius:8px;font-size:12px;transition:.2s;z-index:30}.toast.show{opacity:1;transform:translate(-50%,0)}
-.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:20}.hide{display:none}.modalBox{background:#0d1b29;border:1px solid #38506a;border-radius:12px;padding:18px}.promo{display:flex;gap:8px}.promo button{font-size:28px;width:55px;height:55px;background:#1b3046}
-@media(max-width:900px){main{grid-template-columns:165px minmax(0,1fr) 165px;padding:0 4px;gap:5px}.card{padding:6px}}
-@media(max-width:700px){header{height:58px;padding:8px 10px}h1{font-size:19px}main{display:flex;flex-direction:column;padding:3px}.game{order:1}.lobby{order:2}.right{order:3}.boardShell{padding:2px}.board{width:100%;border-width:2px}.sq{font-size:clamp(31px,11vw,55px)}}
-</style>
-</head>
-<body>
-<header><div><h1>♟ Guest Chess</h1><div class="sub">Play • Talk • Make Friends</div></div><div class="online"><span id="dot" class="dot"></span><span id="conn">Connecting…</span></div></header>
-<main>
-<section class="card lobby"><div class="head"><h2>🟢 Online</h2><span id="count" class="badge">0</span></div><div class="sub">Your ID: <b id="myId">—</b></div><div id="players" class="list"></div></section>
-<section class="card game">
-<div class="gameTop"><div><h2>♟ Chess</h2><div id="gameStatus" class="status">Choose a time and challenge a player.</div></div><div><div class="timeSelect"><button class="timeBtn active" data-time="3+2">3+2</button><button class="timeBtn" data-time="5+0">5</button><button class="timeBtn" data-time="10+0">10</button></div><div class="clocks"><span id="whiteClock" class="clock">3:02</span><span id="blackClock" class="clock">3:02</span></div></div></div>
-<div class="boardShell"><div id="board" class="board"></div></div>
-<div class="actions"><button id="draw" disabled>Offer Draw</button><button id="resign" class="danger" disabled>Resign</button><button id="leave" class="secondary" disabled>Leave</button></div><div id="moves" class="moves"></div>
-</section>
-<section class="card right"><div class="head"><h2>🔔 Requests</h2><span id="reqCount" class="badge">0</span></div><div id="requests" class="list"></div>
-<div class="chat"><div class="head"><h2>💬 Chat</h2></div><div id="messages" class="messages"><div class="empty">Start a game to chat.</div></div><div class="send"><input id="chatInput" maxlength="300" placeholder="Message…" disabled><button id="sendChat" disabled>Send</button></div></div>
-<div style="margin-top:9px"><div class="head"><h2>🎙️ Voice</h2><span id="voiceState" class="badge">Off</span></div><div class="voiceBtns"><button id="voice" disabled>Start Voice</button><button id="mute" class="secondary" disabled>Mute</button></div><div id="voiceHint" class="hint">Both players tap Start Voice and allow microphone access.</div><audio id="remote" autoplay playsinline preload="auto"></audio></div>
-</section>
-</main>
-<div id="toast" class="toast"></div><div id="promoModal" class="modal hide"><div class="modalBox"><h3>Choose promotion</h3><div class="promo"><button data-p="q">♕</button><button data-p="r">♖</button><button data-p="b">♗</button><button data-p="n">♘</button></div></div></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,signInAnonymously,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getDatabase,ref,set,update,onValue,onDisconnect,push,get}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
-const firebaseConfig={apiKey:"AIzaSyBF6ybzGbHicPTfuDkx6OUacL_5e5OA8kc",authDomain:"walkie-talkie-718d3.firebaseapp.com",databaseURL:"https://walkie-talkie-718d3-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"walkie-talkie-718d3",storageBucket:"walkie-talkie-718d3.firebasestorage.app",messagingSenderId:"1066998245388",appId:"1:1066998245388:web:f6076fc04f262373766629",measurementId:"G-VHM5LXX06Z"};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),$=id=>document.getElementById(id);
-let uid="",myId="",gameId="",color="",oppUid="",oppId="",selected=null,promo=null,gameUnsub=null,chess=new Chess(),selectedTime="3+2",baseSeconds=182,whiteSec=182,blackSec=182,lastTick=0,timer=null,localStream=null,pc=null,muted=false;
-const P={w:{p:"♙",n:"♘",b:"♗",r:"♖",q:"♕",k:"♔"},b:{p:"♟",n:"♞",b:"♝",r:"♜",q:"♛",k:"♚"}};
-const $toast=m=>{let t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)},newGuest=()=>`Guest-${Math.random().toString(36).slice(2,7).toUpperCase()}`,fmt=s=>`${Math.floor(Math.max(0,s)/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
-document.querySelectorAll(".timeBtn").forEach(b=>b.onclick=()=>{if(gameId)return;document.querySelectorAll(".timeBtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");selectedTime=b.dataset.time;baseSeconds=selectedTime==="3+2"?182:selectedTime==="5+0"?300:600;whiteSec=blackSec=baseSeconds;renderClocks()});
-function renderClocks(){$("whiteClock").textContent=fmt(whiteSec);$("blackClock").textContent=fmt(blackSec);$("whiteClock").classList.toggle("active",gameId&&chess.turn()==="w");$("blackClock").classList.toggle("active",gameId&&chess.turn()==="b")}
-function renderBoard(){let b=$("board");b.innerHTML="";for(let r=0;r<8;r++)for(let c=0;c<8;c++){let rr=color==="b"?r:7-r,cc=color==="b"?7-c:c,sq=String.fromCharCode(97+cc)+(8-rr),e=document.createElement("div");e.className="sq "+(((rr+cc)%2===0)?"light":"dark");if(selected===sq)e.classList.add("selected");if(selected&&chess.moves({square:selected,verbose:true}).some(m=>m.to===sq)){e.classList.add("legal");if(chess.get(sq))e.classList.add("capture")}let p=chess.get(sq);if(p){let x=document.createElement("span");x.className=`piece ${p.color==="w"?"whitePiece":"blackPiece"}`;x.textContent=P[p.color][p.type];e.appendChild(x)}if(c===0){let n=document.createElement("span");n.className="coords rank";n.textContent=8-rr;e.appendChild(n)}if(rr===7){let n=document.createElement("span");n.className="coords file";n.textContent=String.fromCharCode(97+cc);e.appendChild(n)}e.onclick=()=>squareClick(sq);b.appendChild(e)}}
-function squareClick(sq){
- if(!gameId||chess.game_over())return;
- if(chess.turn()!==color){$toast("Wait for your turn");return;}let p=chess.get(sq);if(selected){let m=chess.moves({square:selected,verbose:true}).find(x=>x.to===sq);if(m){if(m.flags.includes("p")){promo={from:selected,to:sq};$("promoModal").classList.remove("hide");return}move(selected,sq)}else{selected=p&&p.color===color?sq:null;renderBoard()}}else if(p&&p.color===color){selected=sq;renderBoard()}}
-async function move(from,to,promotion="q"){let m=chess.move({from,to,promotion});if(!m)return;selected=null;let inc=selectedTime==="3+2"?2:0;if(color==="w")whiteSec+=inc;else blackSec+=inc;await syncGame();renderBoard();renderClocks()}
-async function syncGame(){lastTick=Date.now();await update(ref(db,`games/${gameId}`),{fen:chess.fen(),pgn:chess.pgn(),turn:chess.turn(),whiteTime:Math.ceil(whiteSec),blackTime:Math.ceil(blackSec),lastTick,status:chess.game_over()?(chess.isCheckmate()?"checkmate":"draw"):"playing"});$("moves").textContent=chess.history().map((m,i)=>(i%2===0?`${i/2+1}. `:"")+m).join(" ")}
-function startTimer(){clearInterval(timer);timer=setInterval(async()=>{if(!gameId||chess.game_over())return;let now=Date.now(),d=(now-lastTick)/1000;lastTick=now;if(chess.turn()==="w")whiteSec-=d;else blackSec-=d;renderClocks();let left=chess.turn()==="w"?whiteSec:blackSec;if(left<=0){await update(ref(db,`games/${gameId}`),{status:"timeout",winner:chess.turn()==="w"?"b":"w",whiteTime:Math.max(0,Math.ceil(whiteSec)),blackTime:Math.max(0,Math.ceil(blackSec)),lastTick:Date.now()});clearInterval(timer)}},250)}
-function renderPlayers(data){let box=$("players");box.innerHTML="";let list=Object.entries(data||{}).filter(([id,p])=>id!==uid&&p.online);$("count").textContent=list.length;if(!list.length){box.innerHTML='<div class="empty">No other guests online.</div>';return}list.forEach(([id,p])=>{let row=document.createElement("div");row.className="row";row.innerHTML=`<div><div class="name">🟢 ${p.guestId}</div><div class="small">${p.inGame?"In game":"Available"}</div></div>`;let b=document.createElement("button");b.textContent="Challenge";b.disabled=!!gameId||!!p.inGame;b.onclick=()=>challenge(id,p.guestId);row.appendChild(b);box.appendChild(row)})}
-async function challenge(t,id){let r=push(ref(db,"requests"));let data={fromUid:uid,fromId:myId,toUid:t,toId:id,type:"chess",status:"pending",timeControl:selectedTime,createdAt:Date.now()};await set(r,data);$toast(`Challenge sent to ${id} • ${selectedTime}`)}
-function renderRequests(data){let box=$("requests");box.innerHTML="";let list=Object.entries(data||{}).filter(([,r])=>r.status==="pending"&&r.toUid===uid);$("reqCount").textContent=list.length;if(!list.length){box.innerHTML='<div class="empty">No pending requests.</div>';return}list.forEach(([rid,r])=>{let row=document.createElement("div");row.className="row";row.innerHTML=`<div><div class="name">${r.fromId}</div><div class="small">${r.timeControl||"5+0"} • chess</div></div>`;let a=document.createElement("button");a.className="success";a.textContent="Accept";a.onclick=()=>accept(rid,r);let d=document.createElement("button");d.className="secondary";d.textContent="Decline";d.onclick=()=>update(ref(db,`requests/${rid}`),{status:"declined"});let x=document.createElement("div");x.style.display="flex";x.style.gap="4px";x.append(a,d);row.appendChild(x);box.appendChild(row)})}
-async function accept(rid,r){let g=push(ref(db,"games")),tc=r.timeControl||"5+0",sec=tc==="3+2"?182:tc==="10+0"?600:300;await set(g,{whiteUid:r.fromUid,whiteGuest:r.fromId,blackUid:uid,blackGuest:myId,fen:new Chess().fen(),pgn:"",turn:"w",status:"playing",timeControl:tc,whiteTime:sec,blackTime:sec,lastTick:Date.now(),createdAt:Date.now()});await update(ref(db,`requests/${rid}`),{status:"accepted",gameId:g.key});await update(ref(db,`players/${uid}`),{inGame:true,gameId:g.key});await update(ref(db,`players/${r.fromUid}`),{inGame:true,gameId:g.key});joinGame(g.key,"b",r.fromUid,r.fromId,tc)}
-function watchAccepted(){onValue(ref(db,"requests"),s=>{Object.values(s.val()||{}).forEach(r=>{if(r.status==="accepted"&&r.gameId&&r.fromUid===uid&&!gameId)joinGame(r.gameId,"w",r.toUid,r.toId,r.timeControl||"5+0")})})}
-function joinGame(g,c,ou,oid,tc){gameId=g;color=c;oppUid=ou;oppId=oid;selected=null;selectedTime=tc;baseSeconds=tc==="3+2"?182:tc==="10+0"?600:300;chess=new Chess();whiteSec=blackSec=baseSeconds;lastTick=Date.now();document.querySelectorAll(".timeBtn").forEach(x=>x.classList.toggle("active",x.dataset.time===tc));$("gameStatus").textContent=`vs ${oppId} • ${tc} • You are ${c==="w"?"White":"Black"}`;["draw","resign","leave","voice","mute"].forEach(id=>$(id).disabled=false);$("chatInput").disabled=false;$("sendChat").disabled=false;if(gameUnsub)gameUnsub();gameUnsub=onValue(ref(db,`games/${g}`),s=>{let x=s.val();if(!x)return;let elapsed=x.status==="playing"?(Date.now()-x.lastTick)/1000:0;whiteSec=Number(x.whiteTime||baseSeconds);blackSec=Number(x.blackTime||baseSeconds);if(x.turn==="w")whiteSec-=elapsed;else blackSec-=elapsed;chess.load(x.fen);lastTick=Date.now();renderBoard();renderClocks();$("moves").textContent=chess.history().map((m,i)=>(i%2===0?`${i/2+1}. `:"")+m).join(" ");if(x.status!=="playing")$("gameStatus").textContent=`Game ended: ${x.status}`;
-else $("gameStatus").textContent=`vs ${oppId} • ${x.timeControl||tc} • You are ${color==="w"?"White":"Black"} • ${x.turn===color?"Your turn":"Opponent's turn"}`;
-});onValue(ref(db,`games/${g}/chat`),s=>{let box=$("messages");box.innerHTML="";Object.values(s.val()||{}).sort((a,b)=>a.at-b.at).forEach(m=>{let d=document.createElement("div");d.className="msg";d.innerHTML=`<b>${esc(m.fromId)}</b>: ${esc(m.text)}`;box.appendChild(d)});box.scrollTop=box.scrollHeight});renderBoard();renderClocks();startTimer()}
-const esc=s=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-async function leaveGame(){if(!gameId)return;await update(ref(db,`players/${uid}`),{inGame:false,gameId:null});clearInterval(timer);if(pc){pc.close();pc=null}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}gameId="";color="";oppUid="";oppId="";chess=new Chess();selected=null;["draw","resign","leave","voice","mute"].forEach(id=>$(id).disabled=true);$("chatInput").disabled=true;$("sendChat").disabled=true;$("voiceState").textContent="Off";$("voice").textContent="Start Voice";$("gameStatus").textContent="Choose a time and challenge a player.";renderBoard();renderClocks()}
-$("leave").onclick=leaveGame;$("resign").onclick=async()=>{if(gameId){await update(ref(db,`games/${gameId}`),{status:"resigned",winner:color==="w"?"b":"w"});leaveGame()}};$("draw").onclick=()=>{$toast("Draw offer sent");gameId&&update(ref(db,`games/${gameId}`),{drawOffer:uid})};$("sendChat").onclick=sendChat;$("chatInput").onkeydown=e=>{if(e.key==="Enter")sendChat()};async function sendChat(){let i=$("chatInput"),t=i.value.trim();if(!t||!gameId)return;await set(push(ref(db,`games/${gameId}/chat`)),{fromId:myId,text:t,at:Date.now()});i.value=""}
-$("promoModal").querySelectorAll("button").forEach(b=>b.onclick=()=>{let p=b.dataset.p;$("promoModal").classList.add("hide");if(promo){move(promo.from,promo.to,p);promo=null}});
-$("voice").onclick=startVoice;$("mute").onclick=()=>{muted=!muted;(localStream?.getAudioTracks()||[]).forEach(t=>t.enabled=!muted);$("mute").textContent=muted?"Unmute":"Mute"};
-async function startVoice(){
-try{
-  localStream=await navigator.mediaDevices.getUserMedia({
-    audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
-  });
-  pc=new RTCPeerConnection({
-    iceServers:[
-      {urls:"stun:stun.l.google.com:19302"},
-      {urls:"stun:stun1.l.google.com:19302"}
-    ]
-  });
+body{
+  margin:0;
+  background:linear-gradient(180deg,#07111c,#0b1724);
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
 
-  localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+header{
+  height:62px;
+  padding:9px 16px;
+  background:#091622;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
 
-  pc.ontrack=async e=>{
-    const audio=$("remote");
-    audio.autoplay=true;
-    audio.playsInline=true;
-    audio.muted=false;
-    audio.volume=1;
-    audio.srcObject=e.streams&&e.streams[0]?e.streams[0]:new MediaStream([e.track]);
-    try{
-      await audio.play();
-      $("voiceState").textContent="🔊 Audio Connected";
-    }catch(err){
-      $("voiceState").textContent="Tap to hear";
-      $toast("Remote audio ready — tap the Voice button again if sound is blocked.");
-    }
-  };
+h1{font-size:21px;margin:0}
+h2{font-size:15px;margin:0}
 
-  pc.onconnectionstatechange=()=>{
-    const st=pc.connectionState;
-    if(st==="connected"){
-      $("voiceState").textContent="Connected";
-    }else if(st==="failed"||st==="disconnected"){
-      $("voiceState").textContent="Disconnected";
-    }else{
-      $("voiceState").textContent=st;
-    }
-  };
+.sub{
+  font-size:11px;
+  color:var(--muted);
+}
 
-  pc.oniceconnectionstatechange=()=>{
-    if(pc.iceConnectionState==="failed"){
-      $("voiceState").textContent="Network failed";
-      $toast("Voice network connection failed.");
-    }
-  };
+.online{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:12px;
+}
 
-  const base=`games/${gameId}/voice`;
+.dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#f59e0b;
+}
 
-  if(color==="w"){
-    pc.onicecandidate=e=>{
-      if(e.candidate) push(ref(db,`${base}/callerCandidates`),e.candidate.toJSON());
-    };
+.dot.ok{background:var(--green)}
 
-    const offer=await pc.createOffer({offerToReceiveAudio:true});
-    await pc.setLocalDescription(offer);
-    await set(ref(db,`${base}/offer`),{
-      type:offer.type,
-      sdp:offer.sdp,
-      createdAt:Date.now()
-    });
+main{
+  width:100%;
+  max-width:1450px;
+  margin:10px auto;
+  padding:0 7px;
+  display:grid;
+  grid-template-columns:190px minmax(0,1fr) 190px;
+  gap:7px;
+}
 
-    onValue(ref(db,`${base}/answer`),async snap=>{
-      if(snap.exists()&&!pc.currentRemoteDescription){
-        await pc.setRemoteDescription(snap.val());
-      }
-    });
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:8px;
+}
 
-    onValue(ref(db,`${base}/calleeCandidates`),snap=>{
-      snap.forEach(x=>{
-        pc.addIceCandidate(x.val()).catch(()=>{});
-      });
-    });
+.game{
+  padding:7px;
+  min-width:0;
+}
 
-  }else{
+.head,
+.gameTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:7px;
+}
 
-    onValue(ref(db,`${base}/offer`),async snap=>{
-      if(!snap.exists()||pc.currentRemoteDescription)return;
+.badge{
+  background:#17283a;
+  border-radius:15px;
+  padding:3px 8px;
+  font-size:10px;
+}
 
-      await pc.setRemoteDescription(snap.val());
+.list{
+  margin-top:8px;
+}
 
-      pc.onicecandidate=e=>{
-        if(e.candidate) push(ref(db,`${base}/calleeCandidates`),e.candidate.toJSON());
-      };
+.row{
+  background:#091520;
+  border:1px solid #203246;
+  border-radius:7px;
+  padding:7px;
+  margin-bottom:5px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+}
 
-      const answer=await pc.createAnswer({offerToReceiveAudio:true});
-      await pc.setLocalDescription(answer);
+.name{
+  font-size:12px;
+  font-weight:700;
+}
 
-      await set(ref(db,`${base}/answer`),{
-        type:answer.type,
-        sdp:answer.sdp,
-        createdAt:Date.now()
-      });
-    });
+.small{
+  font-size:10px;
+  color:var(--muted);
+  margin-top:2px;
+}
 
-    onValue(ref(db,`${base}/callerCandidates`),snap=>{
-      snap.forEach(x=>{
-        pc.addIceCandidate(x.val()).catch(()=>{});
-      });
-    });
+button{
+  border:0;
+  border-radius:7px;
+  background:var(--blue);
+  color:#fff;
+  padding:7px 9px;
+  font-weight:700;
+  font-size:11px;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+}
+
+.secondary{background:#304255}
+.danger{background:#a92331}
+.success{background:#158a4c}
+
+.timeSelect{
+  display:flex;
+  gap:4px;
+}
+
+.timeBtn{
+  background:#172a3e;
+  border:1px solid #2c455d;
+  font-size:12px;
+  padding:7px 12px;
+}
+
+.timeBtn.active{
+  background:var(--blue);
+  border-color:#4aa0ff;
+}
+
+.clocks{
+  display:flex;
+  gap:4px;
+  margin-top:4px;
+}
+
+.clock{
+  font:700 13px ui-monospace,monospace;
+  background:#07111c;
+  border:1px solid #2a4057;
+  padding:4px 8px;
+  border-radius:6px;
+}
+
+.clock.active{
+  border-color:#1683ff;
+}
+
+.status{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.boardShell{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  padding:4px;
+  background:#03080d;
+  border:2px solid #32495e;
+  border-radius:6px;
+  margin-top:6px;
+  box-shadow:0 4px 18px #0007;
+}
+
+.board{
+  width:min(100%,780px);
+  aspect-ratio:1;
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  grid-template-rows:repeat(8,1fr);
+  border:3px solid #111820;
+  outline:1px solid #60748a;
+  border-radius:2px;
+  overflow:hidden;
+}
+
+.sq{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(30px,7vw,66px);
+  line-height:1;
+  user-select:none;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+.light{background:var(--light)}
+.dark{background:var(--dark)}
+
+.piece{
+  font-family:"Times New Roman","DejaVu Serif",serif;
+  font-weight:700;
+  line-height:1;
+  filter:drop-shadow(0 1px 1px #0008);
+}
+
+.whitePiece{
+  color:#fff;
+  text-shadow:
+    -1px -1px 0 #111,
+    1px -1px 0 #111,
+    -1px 1px 0 #111,
+    1px 1px 0 #111,
+    0 2px 2px #0008;
+}
+
+.blackPiece{
+  color:#111;
+  text-shadow:0 1px 1px #fff6;
+}
+
+.selected{
+  outline:4px solid #f6d84a;
+  outline-offset:-4px;
+  box-shadow:inset 0 0 0 2px #0006;
+}
+
+.legal:after{
+  content:"";
+  width:17%;
+  height:17%;
+  border-radius:50%;
+  background:#1118;
+  position:absolute;
+}
+
+.capture:after{
+  content:"";
+  position:absolute;
+  inset:5%;
+  border:4px solid #1118;
+  border-radius:50%;
+}
+
+.coords{
+  position:absolute;
+  font-size:9px;
+  font-family:system-ui;
+  font-weight:700;
+  opacity:.8;
+  pointer-events:none;
+}
+
+.file{
+  right:3px;
+  bottom:1px;
+}
+
+.rank{
+  left:3px;
+  top:1px;
+}
+
+.actions{
+  display:flex;
+  gap:5px;
+  margin-top:6px;
+}
+
+.actions button{
+  flex:1;
+}
+
+.moves{
+  margin-top:6px;
+  max-height:65px;
+  overflow:auto;
+  font:10px/1.5 ui-monospace,monospace;
+  color:#b9c8d8;
+}
+
+.chat{
+  margin-top:9px;
+}
+
+.messages{
+  height:115px;
+  overflow:auto;
+  background:#08131f;
+  border:1px solid #20354a;
+  border-radius:7px;
+  padding:6px;
+  margin-top:6px;
+}
+
+.msg{
+  font-size:11px;
+  margin:4px 0;
+}
+
+.msg b{
+  color:#74b9ff;
+}
+
+.send{
+  display:flex;
+  gap:4px;
+  margin-top:4px;
+}
+
+.send input{
+  min-width:0;
+  flex:1;
+  background:#08131f;
+  border:1px solid #2a4057;
+  color:#fff;
+  border-radius:7px;
+  padding:7px;
+  font-size:11px;
+}
+
+.voiceBtns{
+  display:flex;
+  gap:4px;
+  margin-top:6px;
+}
+
+.voiceBtns button{
+  flex:1;
+}
+
+.hint,
+.empty{
+  font-size:10px;
+  color:#71869c;
+  padding:5px 0;
+}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translate(-50%,20px);
+  opacity:0;
+  background:#02070d;
+  border:1px solid #3a536c;
+  padding:9px 13px;
+  border-radius:8px;
+  font-size:12px;
+  transition:.2s;
+  z-index:30;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#000b;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+}
+
+.hide{
+  display:none;
+}
+
+.modalBox{
+  background:#0d1b29;
+  border:1px solid #38506a;
+  border-radius:12px;
+  padding:18px;
+}
+
+.promo{
+  display:flex;
+  gap:8px;
+}
+
+.promo button{
+  font-size:28px;
+  width:55px;
+  height:55px;
+  background:#1b3046;
+}
+
+@media(max-width:900px){
+  main{
+    grid-template-columns:165px minmax(0,1fr) 165px;
+    padding:0 4px;
+    gap:5px;
   }
 
-  $("voice").disabled=true;
-  $("voice").textContent="Voice On";
-  $("mute").disabled=false;
-  $("voiceState").textContent="Connecting…";
+  .card{
+    padding:6px;
+  }
+}
 
-}catch(e){
-  console.error(e);
-  $("voiceState").textContent="Error";
-  $toast("Voice failed: "+(e.message||"Allow microphone permission."));
-}}
-onAuthStateChanged(auth,async u=>{if(!u)return;uid=u.uid;let p=await get(ref(db,`players/${uid}`));myId=p.exists()?p.val().guestId:newGuest();await set(ref(db,`players/${uid}`),{guestId:myId,online:true,inGame:false,updatedAt:Date.now()});onDisconnect(ref(db,`players/${uid}`)).update({online:false,inGame:false});$("myId").textContent=myId;$("dot").classList.add("ok");$("conn").textContent="Online";onValue(ref(db,"players"),s=>renderPlayers(s.val()),e=>{$("count").textContent="!";$("players").innerHTML=`<div class="empty">Online list error: ${esc(e.message||"Database access denied")}</div>`});onValue(ref(db,"requests"),s=>renderRequests(s.val()),e=>{$("requests").innerHTML=`<div class="empty">Request access error: ${esc(e.message||"database access denied")}</div>`});watchAccepted();renderBoard();renderClocks()});
-signInAnonymously(auth).catch(e=>{$("conn").textContent="Auth setup required";$toast("Enable Anonymous Authentication in Firebase.")});
+@media(max-width:700px){
+  header{
+    height:58px;
+    padding:8px 10px;
+  }
+
+  h1{
+    font-size:19px;
+  }
+
+  main{
+    display:flex;
+    flex-direction:column;
+    padding:3px;
+  }
+
+  .game{order:1}
+  .lobby{order:2}
+  .right{order:3}
+
+  .boardShell{
+    padding:2px;
+  }
+
+  .board{
+    width:100%;
+    border-width:2px;
+  }
+
+  .sq{
+    font-size:clamp(31px,11vw,55px);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <h1>♟ Guest Chess</h1>
+    <div class="sub">Play • Talk • Make Friends</div>
+  </div>
+
+  <div class="online">
+    <span id="dot" class="dot"></span>
+    <span id="conn">Connecting…</span>
+  </div>
+</header>
+
+<main>
+
+<section class="card lobby">
+
+  <div class="head">
+    <h2>🟢 Online</h2>
+    <span id="count" class="badge">0</span>
+  </div>
+
+  <div class="sub">
+    Your ID: <b id="myId">—</b>
+  </div>
+
+  <div id="players" class="list"></div>
+
+</section>
+
+
+<section class="card game">
+
+  <div class="gameTop">
+
+    <div>
+      <h2>♟ Chess</h2>
+      <div id="gameStatus" class="status">
+        Choose a time and challenge a player.
+      </div>
+    </div>
+
+    <div>
+
+      <div class="timeSelect">
+        <button class="timeBtn active" data-time="3+2">3+2</button>
+        <button class="timeBtn" data-time="5+0">5</button>
+        <button class="timeBtn" data-time="10+0">10</button>
+      </div>
+
+      <div class="clocks">
+        <span id="whiteClock" class="clock">3:00</span>
+        <span id="blackClock" class="clock">3:00</span>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="boardShell">
+    <div id="board" class="board"></div>
+  </div>
+
+
+  <div class="actions">
+    <button id="draw" disabled>Offer Draw</button>
+    <button id="resign" class="danger" disabled>Resign</button>
+    <button id="leave" class="secondary" disabled>Leave</button>
+  </div>
+
+
+  <div id="moves" class="moves"></div>
+
+</section>
+
+
+<section class="card right">
+
+  <div class="head">
+    <h2>🔔 Requests</h2>
+    <span id="reqCount" class="badge">0</span>
+  </div>
+
+  <div id="requests" class="list"></div>
+
+
+  <div class="chat">
+
+    <div class="head">
+      <h2>💬 Chat</h2>
+    </div>
+
+    <div id="messages" class="messages">
+      <div class="empty">
+        Start a game to chat.
+      </div>
+    </div>
+
+    <div class="send">
+      <input id="chatInput" maxlength="300" placeholder="Message…" disabled>
+      <button id="sendChat" disabled>Send</button>
+    </div>
+
+  </div>
+
+
+  <div style="margin-top:9px">
+
+    <div class="head">
+      <h2>🎙️ Voice</h2>
+      <span id="voiceState" class="badge">Off</span>
+    </div>
+
+    <div class="voiceBtns">
+      <button id="voice" disabled>Start Voice</button>
+      <button id="mute" class="secondary" disabled>Mute</button>
+    </div>
+
+    <div id="voiceHint" class="hint">
+      Both players tap Start Voice and allow microphone access.
+    </div>
+
+    <audio id="remote" autoplay playsinline preload="auto"></audio>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<div id="toast" class="toast"></div>
+
+
+<div id="promoModal" class="modal hide">
+
+  <div class="modalBox">
+
+    <h3>Choose promotion</h3>
+
+    <div class="promo">
+      <button data-p="q">♕</button>
+      <button data-p="r">♖</button>
+      <button data-p="b">♗</button>
+      <button data-p="n">♘</button>
+    </div>
+
+  </div>
+
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+
+<script type="module">
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+  getAuth,
+  signInAnonymously,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  update,
+  onValue,
+  onDisconnect,
+  push,
+  get
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+  apiKey:"AIzaSyBF6ybzGbHicPTfuDkx6OUacL_5e5OA8kc",
+
+  authDomain:"walkie-talkie-718d3.firebaseapp.com",
+
+  databaseURL:
+  "https://walkie-talkie-718d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+  projectId:"walkie-talkie-718d3",
+
+  storageBucket:
+  "walkie-talkie-718d3.firebasestorage.app",
+
+  messagingSenderId:"1066998245388",
+
+  appId:
+  "1:1066998245388:web:f6076fc04f262373766629",
+
+  measurementId:"G-VHM5LXX06Z"
+};
+
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+
+const $=id=>document.getElementById(id);
+
+
+let uid="";
+let myId="";
+
+let gameId="";
+let color="";
+let oppUid="";
+let oppId="";
+
+let selected=null;
+let promo=null;
+
+let gameUnsub=null;
+
+let chess=new Chess();
+
+let selectedTime="3+2";
+
+let baseSeconds=180;
+
+let whiteSec=180;
+let blackSec=180;
+
+let lastTick=0;
+
+let timer=null;
+
+let localStream=null;
+let pc=null;
+
+let muted=false;
+
+
+const P={
+
+  w:{
+    p:"♙",
+    n:"♘",
+    b:"♗",
+    r:"♖",
+    q:"♕",
+    k:"♔"
+  },
+
+  b:{
+    p:"♟",
+    n:"♞",
+    b:"♝",
+    r:"♜",
+    q:"♛",
+    k:"♚"
+  }
+
+};
+
+
+const $toast=m=>{
+
+  let t=$("toast");
+
+  t.textContent=m;
+
+  t.classList.add("show");
+
+  setTimeout(
+    ()=>t.classList.remove("show"),
+    2200
+  );
+
+};
+
+
+const newGuest=()=>{
+
+  return `Guest-${
+    Math.random()
+      .toString(36)
+      .slice(2,7)
+      .toUpperCase()
+  }`;
+
+};
+
+
+const fmt=s=>{
+
+  s=Math.max(0,Math.ceil(s));
+
+  return `${Math.floor(s/60)}:${
+    String(s%60).padStart(2,"0")
+  }`;
+
+};
+
+
+document
+.querySelectorAll(".timeBtn")
+.forEach(b=>{
+
+  b.onclick=()=>{
+
+    if(gameId)return;
+
+    document
+      .querySelectorAll(".timeBtn")
+      .forEach(x=>x.classList.remove("active"));
+
+    b.classList.add("active");
+
+    selectedTime=b.dataset.time;
+
+    baseSeconds=
+      selectedTime==="3+2"
+      ?180
+      :selectedTime==="5+0"
+      ?300
+      :600;
+
+    whiteSec=baseSeconds;
+    blackSec=baseSeconds;
+
+    renderClocks();
+
+  };
+
+});
+
+
+function renderClocks(){
+
+  $("whiteClock").textContent=fmt(whiteSec);
+
+  $("blackClock").textContent=fmt(blackSec);
+
+  const active=
+    gameId &&
+    chess.turn();
+
+  $("whiteClock")
+    .classList.toggle(
+      "active",
+      active==="w"
+    );
+
+  $("blackClock")
+    .classList.toggle(
+      "active",
+      active==="b"
+    );
+
+}
+
+
+function renderBoard(){
+
+  let b=$("board");
+
+  b.innerHTML="";
+
+
+  for(let r=0;r<8;r++){
+
+    for(let c=0;c<8;c++){
+
+      let rr=
+        color==="b"
+        ?r
+        :7-r;
+
+      let cc=
+        color==="b"
+        ?7-c
+        :c;
+
+
+      let sq=
+        String.fromCharCode(97+cc)
+        +(8-rr);
+
+
+      let e=document.createElement("div");
+
+      e.className=
+        "sq "+
+        (((rr+cc)%2===0)
+        ?"light"
+        :"dark");
+
+
+      if(selected===sq){
+
+        e.classList.add("selected");
+
+      }
+
+
+      if(
+        selected &&
+        chess
+          .moves({
+            square:selected,
+            verbose:true
+          })
+          .some(m=>m.to===sq)
+      ){
+
+        e.classList.add("legal");
+
+        if(chess.get(sq)){
+          e.classList.add("capture");
+        }
+
+      }
+
+
+      let p=chess.get(sq);
+
+
+      if(p){
+
+        let x=document.createElement("span");
+
+        x.className=
+          `piece ${
+            p.color==="w"
+            ?"whitePiece"
+            :"blackPiece"
+          }`;
+
+        x.textContent=P[p.color][p.type];
+
+        e.appendChild(x);
+
+      }
+
+
+      if(c===0){
+
+        let n=document.createElement("span");
+
+        n.className="coords rank";
+
+        n.textContent=8-rr;
+
+        e.appendChild(n);
+
+      }
+
+
+      if(rr===7){
+
+        let n=document.createElement("span");
+
+        n.className="coords file";
+
+        n.textContent=
+          String.fromCharCode(97+cc);
+
+        e.appendChild(n);
+
+      }
+
+
+      e.onclick=()=>squareClick(sq);
+
+      b.appendChild(e);
+
+    }
+
+  }
+
+}
+
+
+function squareClick(sq){
+
+  if(
+    !gameId ||
+    chess.game_over()
+  ){
+    return;
+  }
+
+
+  if(chess.turn()!==color){
+
+    $toast("Wait for your turn");
+
+    return;
+  }
+
+
+  const piece=chess.get(sq);
+
+
+  /*
+    FIRST TAP
+    Select your own piece.
+  */
+
+  if(!selected){
+
+    if(
+      piece &&
+      piece.color===color
+    ){
+
+      selected=sq;
+
+      renderBoard();
+
+    }
+
+    return;
+  }
+
+
+  /*
+    TAP SAME PIECE
+    Cancel selection.
+  */
+
+  if(sq===selected){
+
+    selected=null;
+
+    renderBoard();
+
+    return;
+  }
+
+
+  /*
+    TAP ANOTHER OWN PIECE
+    Change selection.
+  */
+
+  if(
+    piece &&
+    piece.color===color
+  ){
+
+    selected=sq;
+
+    renderBoard();
+
+    return;
+  }
+
+
+  /*
+    SECOND TAP
+    Must be a legal destination.
+  */
+
+  const legal=
+    chess.moves({
+      square:selected,
+      verbose:true
+    });
+
+
+  const m=
+    legal.find(x=>x.to===sq);
+
+
+  if(!m){
+
+    $toast("Illegal move");
+
+    return;
+  }
+
+
+  /*
+    PROMOTION
+  */
+
+  if(m.flags.includes("p")){
+
+    promo={
+      from:selected,
+      to:sq
+    };
+
+    $("promoModal")
+      .classList.remove("hide");
+
+    return;
+  }
+
+
+  move(selected,sq);
+
+}
+
+
+async function move(
+  from,
+  to,
+  promotion="q"
+){
+
+  if(
+    !gameId ||
+    chess.turn()!==color
+  ){
+    return;
+  }
+
+
+  const legal=
+    chess.moves({
+      square:from,
+      verbose:true
+    })
+    .find(x=>x.to===to);
+
+
+  if(!legal)return;
+
+
+  const m=
+    chess.move({
+      from,
+      to,
+      promotion
+    });
+
+
+  if(!m)return;
+
+
+  /*
+    3+2 INCREMENT
+
+    Clock starts at 3:00.
+    After every legal move:
+    mover gets +2 seconds.
+  */
+
+  if(selectedTime==="3+2"){
+
+    if(color==="w"){
+      whiteSec+=2;
+    }else{
+      blackSec+=2;
+    }
+
+  }
+
+
+  selected=null;
+
+  await syncGame();
+
+  renderBoard();
+
+  renderClocks();
+
+}
+
+
+async function syncGame(){
+
+  if(!gameId)return;
+
+
+  lastTick=Date.now();
+
+
+  let status="playing";
+
+
+  if(chess.game_over()){
+
+    if(chess.isCheckmate()){
+      status="checkmate";
+    }else{
+      status="draw";
+    }
+
+  }
+
+
+  await update(
+    ref(db,`games/${gameId}`),
+    {
+
+      fen:chess.fen(),
+
+      pgn:chess.pgn(),
+
+      turn:chess.turn(),
+
+      whiteTime:
+        Math.max(
+          0,
+          Math.ceil(whiteSec)
+        ),
+
+      blackTime:
+        Math.max(
+          0,
+          Math.ceil(blackSec)
+        ),
+
+      lastTick,
+
+      status,
+
+      lastMoveAt:Date.now()
+
+    }
+  );
+
+
+  $("moves").textContent=
+    chess
+      .history()
+      .map(
+        (m,i)=>
+          (i%2===0
+            ?`${i/2+1}. `
+            :""
+          )+m
+      )
+      .join(" ");
+
+}
+
+
+function startTimer(){
+
+  clearInterval(timer);
+
+
+  timer=setInterval(async()=>{
+
+    if(
+      !gameId ||
+      chess.game_over()
+    ){
+      return;
+    }
+
+
+    const now=Date.now();
+
+
+    const d=
+      Math.max(
+        0,
+        (now-lastTick)/1000
+      );
+
+
+    lastTick=now;
+
+
+    /*
+      Only the current player loses time.
+    */
+
+    if(chess.turn()==="w"){
+
+      whiteSec=
+        Math.max(
+          0,
+          whiteSec-d
+        );
+
+    }else{
+
+      blackSec=
+        Math.max(
+          0,
+          blackSec-d
+        );
+
+    }
+
+
+    renderClocks();
+
+
+    const left=
+      chess.turn()==="w"
+      ?whiteSec
+      :blackSec;
+
+
+    /*
+      Only the player whose
+      browser is active writes timeout.
+    */
+
+    if(left<=0){
+
+      const loser=chess.turn();
+
+
+      await update(
+        ref(db,`games/${gameId}`),
+        {
+
+          status:"timeout",
+
+          winner=
+            loser==="w"
+            ?"b"
+            :"w",
+
+          whiteTime:
+            Math.max(
+              0,
+              Math.ceil(whiteSec)
+            ),
+
+          blackTime:
+            Math.max(
+              0,
+              Math.ceil(blackSec)
+            ),
+
+          lastTick:Date.now()
+
+        }
+      );
+
+
+      clearInterval(timer);
+
+    }
+
+  },250);
+
+}
+
+
+function renderPlayers(data){
+
+  let box=$("players");
+
+  box.innerHTML="";
+
+
+  let list=
+    Object.entries(data||{})
+    .filter(
+      ([id,p])=>
+        id!==uid &&
+        p.online
+    );
+
+
+  $("count").textContent=list.length;
+
+
+  if(!list.length){
+
+    box.innerHTML=
+      '<div class="empty">No other guests online.</div>';
+
+    return;
+
+  }
+
+
+  list.forEach(([id,p])=>{
+
+    let row=document.createElement("div");
+
+    row.className="row";
+
+
+    row.innerHTML=`
+
+      <div>
+
+        <div class="name">
+          🟢 ${esc(p.guestId)}
+        </div>
+
+        <div class="small">
+          ${p.inGame?"In game":"Available"}
+        </div>
+
+      </div>
+
+    `;
+
+
+    let b=document.createElement("button");
+
+    b.textContent="Challenge";
+
+    b.disabled=
+      !!gameId ||
+      !!p.inGame;
+
+
+    b.onclick=
+      ()=>challenge(
+        id,
+        p.guestId
+      );
+
+
+    row.appendChild(b);
+
+    box.appendChild(row);
+
+  });
+
+}
+
+
+async function challenge(
+  t,
+  id
+){
+
+  try{
+
+    if(
+      !uid ||
+      !t ||
+      t===uid
+    ){
+
+      $toast("Invalid player");
+
+      return;
+
+    }
+
+
+    if(gameId){
+
+      $toast(
+        "Finish the current game first."
+      );
+
+      return;
+
+    }
+
+
+    const r=
+      push(
+        ref(db,"requests")
+      );
+
+
+    await set(
+      r,
+      {
+
+        fromUid:uid,
+
+        fromId:myId,
+
+        toUid:t,
+
+        toId:id,
+
+        type:"chess",
+
+        status:"pending",
+
+        timeControl:selectedTime,
+
+        createdAt:Date.now()
+
+      }
+    );
+
+
+    $toast(
+      `Challenge sent to ${id} • ${selectedTime}`
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+    $toast(
+      "Challenge failed: "+
+      (e.message||
+      "Database permission error")
+    );
+
+  }
+
+}
+
+
+function renderRequests(data){
+
+  let box=$("requests");
+
+  box.innerHTML="";
+
+
+  let list=
+    Object.entries(data||{})
+    .filter(
+      ([,r])=>
+        r.status==="pending" &&
+        r.toUid===uid
+    );
+
+
+  $("reqCount").textContent=list.length;
+
+
+  if(!list.length){
+
+    box.innerHTML=
+      '<div class="empty">No pending requests.</div>';
+
+    return;
+
+  }
+
+
+  list.forEach(([rid,r])=>{
+
+    let row=document.createElement("div");
+
+    row.className="row";
+
+
+    row.innerHTML=`
+
+      <div>
+
+        <div class="name">
+          ${esc(r.fromId)}
+        </div>
+
+        <div class="small">
+          ${r.timeControl||"5+0"} • chess
+        </div>
+
+      </div>
+
+    `;
+
+
+    let a=document.createElement("button");
+
+    a.className="success";
+
+    a.textContent="Accept";
+
+    a.onclick=
+      ()=>accept(rid,r);
+
+
+    let d=document.createElement("button");
+
+    d.className="secondary";
+
+    d.textContent="Decline";
+
+    d.onclick=
+      ()=>update(
+        ref(db,`requests/${rid}`),
+        {status:"declined"}
+      );
+
+
+    let x=document.createElement("div");
+
+    x.style.display="flex";
+
+    x.style.gap="4px";
+
+    x.append(a,d);
+
+    row.appendChild(x);
+
+    box.appendChild(row);
+
+  });
+
+}
+
+
+async function accept(
+  rid,
+  r
+){
+
+  try{
+
+    /*
+      Create game immediately.
+    */
+
+    let g=
+      push(
+        ref(db,"games")
+      );
+
+
+    let tc=
+      r.timeControl||"5+0";
+
+
+    /*
+      Correct starting clocks:
+      3+2 = 3:00
+      5+0 = 5:00
+      10+0 = 10:00
+    */
+
+    let sec=
+      tc==="3+2"
+      ?180
+      :tc==="10+0"
+      ?600
+      :300;
+
+
+    await set(
+      g,
+      {
+
+        whiteUid:r.fromUid,
+
+        whiteGuest:r.fromId,
+
+        blackUid:uid,
+
+        blackGuest:myId,
+
+        fen:new Chess().fen(),
+
+        pgn:"",
+
+        turn:"w",
+
+        status:"playing",
+
+        timeControl:tc,
+
+        whiteTime:sec,
+
+        blackTime:sec,
+
+        lastTick:Date.now(),
+
+        createdAt:Date.now()
+
+      }
+    );
+
+
+    /*
+      Mark request accepted.
+    */
+
+    await update(
+      ref(db,`requests/${rid}`),
+      {
+        status:"accepted",
+        gameId:g.key
+      }
+    );
+
+
+    /*
+      Acceptor updates only
+      his own player record.
+    */
+
+    await update(
+      ref(db,`players/${uid}`),
+      {
+        inGame:true,
+        gameId:g.key
+      }
+    );
+
+
+    /*
+      Acceptor = BLACK.
+    */
+
+    joinGame(
+      g.key,
+      "b",
+      r.fromUid,
+      r.fromId,
+      tc
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+    $toast(
+      "Accept failed: "+
+      (e.message||
+      "Database permission error")
+    );
+
+  }
+
+}
+
+
+function watchAccepted(){
+
+  onValue(
+    ref(db,"requests"),
+    s=>{
+
+      Object
+        .values(s.val()||{})
+        .forEach(r=>{
+
+          /*
+            Challenger becomes WHITE.
+          */
+
+          if(
+            r.status==="accepted" &&
+            r.gameId &&
+            r.fromUid===uid &&
+            !gameId
+          ){
+
+            joinGame(
+              r.gameId,
+              "w",
+              r.toUid,
+              r.toId,
+              r.timeControl||"5+0"
+            );
+
+          }
+
+        });
+
+    }
+  );
+
+}
+
+
+function joinGame(
+  g,
+  c,
+  ou,
+  oid,
+  tc
+){
+
+  gameId=g;
+
+  color=c;
+
+  oppUid=ou;
+
+  oppId=oid;
+
+  selected=null;
+
+  selectedTime=tc;
+
+
+  update(
+    ref(db,`players/${uid}`),
+    {
+      inGame:true,
+      gameId:g
+    }
+  );
+
+
+  baseSeconds=
+    tc==="3+2"
+    ?180
+    :tc==="10+0"
+    ?600
+    :300;
+
+
+  chess=new Chess();
+
+  whiteSec=baseSeconds;
+
+  blackSec=baseSeconds;
+
+  lastTick=Date.now();
+
+
+  document
+    .querySelectorAll(".timeBtn")
+    .forEach(
+      x=>
+        x.classList.toggle(
+          "active",
+          x.dataset.time===tc
+        )
+    );
+
+
+  $("gameStatus").textContent=
+    `vs ${oppId} • ${tc} • You are ${
+      c==="w"
+      ?"White"
+      :"Black"
+    }`;
+
+
+  [
+    "draw",
+    "resign",
+    "leave",
+    "voice",
+    "mute"
+  ]
+  .forEach(
+    id=>$(id).disabled=false
+  );
+
+
+  $("chatInput").disabled=false;
+
+  $("sendChat").disabled=false;
+
+
+  if(gameUnsub){
+    gameUnsub();
+  }
+
+
+  gameUnsub=
+    onValue(
+      ref(db,`games/${g}`),
+      s=>{
+
+        let x=s.val();
+
+        if(!x)return;
+
+
+        /*
+          Read server clock.
+        */
+
+        let elapsed=
+          x.status==="playing"
+          ?(Date.now()-x.lastTick)/1000
+          :0;
+
+
+        whiteSec=
+          Number(
+            x.whiteTime||baseSeconds
+          );
+
+
+        blackSec=
+          Number(
+            x.blackTime||baseSeconds
+          );
+
+
+        if(x.turn==="w"){
+
+          whiteSec-=elapsed;
+
+        }else{
+
+          blackSec-=elapsed;
+
+        }
+
+
+        /*
+          Never let timer go negative.
+        */
+
+        whiteSec=
+          Math.max(0,whiteSec);
+
+        blackSec=
+          Math.max(0,blackSec);
+
+
+        chess.load(x.fen);
+
+
+        lastTick=Date.now();
+
+
+        renderBoard();
+
+        renderClocks();
+
+
+        $("moves").textContent=
+          chess
+            .history()
+            .map(
+              (m,i)=>
+                (i%2===0
+                  ?`${i/2+1}. `
+                  :""
+                )+m
+            )
+            .join(" ");
+
+
+        if(x.status!=="playing"){
+
+          $("gameStatus").textContent=
+            `Game ended: ${x.status}`;
+
+          clearInterval(timer);
+
+        }else{
+
+          $("gameStatus").textContent=
+            `vs ${oppId} • ${
+              x.timeControl||tc
+            } • You are ${
+              color==="w"
+              ?"White"
+              :"Black"
+            } • ${
+              x.turn===color
+              ?"Your turn"
+              :"Opponent's turn"
+            }`;
+
+        }
+
+      }
+    );
+
+
+  /*
+    CHAT
+  */
+
+  onValue(
+    ref(db,`games/${g}/chat`),
+    s=>{
+
+      let box=$("messages");
+
+      box.innerHTML="";
+
+
+      Object
+        .values(s.val()||{})
+        .sort(
+          (a,b)=>a.at-b.at
+        )
+        .forEach(m=>{
+
+          let d=
+            document.createElement("div");
+
+          d.className="msg";
+
+          d.innerHTML=
+            `<b>${esc(m.fromId)}</b>: ${
+              esc(m.text)
+            }`;
+
+          box.appendChild(d);
+
+        });
+
+
+      box.scrollTop=
+        box.scrollHeight;
+
+    }
+  );
+
+
+  renderBoard();
+
+  renderClocks();
+
+  startTimer();
+
+}
+
+
+const esc=s=>
+  String(s??"")
+  .replace(
+    /[&<>"']/g,
+    c=>({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[c])
+  );
+
+
+async function leaveGame(){
+
+  if(!gameId)return;
+
+
+  await update(
+    ref(db,`players/${uid}`),
+    {
+      inGame:false,
+      gameId:null
+    }
+  );
+
+
+  clearInterval(timer);
+
+
+  if(pc){
+
+    pc.close();
+
+    pc=null;
+
+  }
+
+
+  if(localStream){
+
+    localStream
+      .getTracks()
+      .forEach(
+        t=>t.stop()
+      );
+
+    localStream=null;
+
+  }
+
+
+  gameId="";
+
+  color="";
+
+  oppUid="";
+
+  oppId="";
+
+
+  chess=new Chess();
+
+  selected=null;
+
+
+  [
+    "draw",
+    "resign",
+    "leave",
+    "voice",
+    "mute"
+  ]
+  .forEach(
+    id=>$(id).disabled=true
+  );
+
+
+  $("chatInput").disabled=true;
+
+  $("sendChat").disabled=true;
+
+
+  $("voiceState").textContent="Off";
+
+  $("voice").textContent="Start Voice";
+
+
+  $("gameStatus").textContent=
+    "Choose a time and challenge a player.";
+
+
+  renderBoard();
+
+  renderClocks();
+
+}
+
+
+$("leave").onclick=leaveGame;
+
+
+$("resign").onclick=
+  async()=>{
+
+    if(gameId){
+
+      await update(
+        ref(db,`games/${gameId}`),
+        {
+          status:"resigned",
+          winner:
+            color==="w"
+            ?"b"
+            :"w"
+        }
+      );
+
+      leaveGame();
+
+    }
+
+  };
+
+
+$("draw").onclick=()=>{
+
+  $toast("Draw offer sent");
+
+  if(gameId){
+
+    update(
+      ref(db,`games/${gameId}`),
+      {
+        drawOffer:uid
+      }
+    );
+
+  }
+
+};
+
+
+$("sendChat").onclick=sendChat;
+
+
+$("chatInput").onkeydown=e=>{
+
+  if(e.key==="Enter"){
+
+    sendChat();
+
+  }
+
+};
+
+
+async function sendChat(){
+
+  let i=$("chatInput");
+
+  let t=i.value.trim();
+
+
+  if(!t || !gameId)return;
+
+
+  await set(
+    push(
+      ref(db,`games/${gameId}/chat`)
+    ),
+    {
+      fromId:myId,
+      text:t,
+      at:Date.now()
+    }
+  );
+
+
+  i.value="";
+
+}
+
+
+$("promoModal")
+.querySelectorAll("button")
+.forEach(b=>{
+
+  b.onclick=()=>{
+
+    let p=b.dataset.p;
+
+    $("promoModal")
+      .classList.add("hide");
+
+
+    if(promo){
+
+      move(
+        promo.from,
+        promo.to,
+        p
+      );
+
+      promo=null;
+
+    }
+
+  };
+
+});
+
+
+$("voice").onclick=startVoice;
+
+
+$("mute").onclick=()=>{
+
+  muted=!muted;
+
+
+  (
+    localStream?.getAudioTracks()||[]
+  )
+  .forEach(
+    t=>t.enabled=!muted
+  );
+
+
+  $("mute").textContent=
+    muted
+    ?"Unmute"
+    :"Mute";
+
+};
+
+
+async function startVoice(){
+
+  try{
+
+    localStream=
+      await navigator
+      .mediaDevices
+      .getUserMedia({
+
+        audio:{
+          echoCancellation:true,
+          noiseSuppression:true,
+          autoGainControl:true
+        }
+
+      });
+
+
+    pc=
+      new RTCPeerConnection({
+
+        iceServers:[
+
+          {
+            urls:
+            "stun:stun.l.google.com:19302"
+          },
+
+          {
+            urls:
+            "stun:stun1.l.google.com:19302"
+          }
+
+        ]
+
+      });
+
+
+    localStream
+      .getTracks()
+      .forEach(
+        t=>pc.addTrack(t,localStream)
+      );
+
+
+    pc.ontrack=async e=>{
+
+      const audio=$("remote");
+
+
+      audio.autoplay=true;
+
+      audio.playsInline=true;
+
+      audio.muted=false;
+
+      audio.volume=1;
+
+
+      audio.srcObject=
+        e.streams &&
+        e.streams[0]
+        ?e.streams[0]
+        :new MediaStream([e.track]);
+
+
+      try{
+
+        await audio.play();
+
+        $("voiceState").textContent=
+          "🔊 Audio Connected";
+
+      }catch(err){
+
+        $("voiceState").textContent=
+          "Tap to hear";
+
+        $toast(
+          "Remote audio ready — tap Voice again."
+        );
+
+      }
+
+    };
+
+
+    pc.onconnectionstatechange=()=>{
+
+      const st=pc.connectionState;
+
+
+      if(st==="connected"){
+
+        $("voiceState").textContent=
+          "Connected";
+
+      }else if(
+        st==="failed" ||
+        st==="disconnected"
+      ){
+
+        $("voiceState").textContent=
+          "Disconnected";
+
+      }else{
+
+        $("voiceState").textContent=st;
+
+      }
+
+    };
+
+
+    pc.oniceconnectionstatechange=()=>{
+
+      if(
+        pc.iceConnectionState==="failed"
+      ){
+
+        $("voiceState").textContent=
+          "Network failed";
+
+        $toast(
+          "Voice network connection failed."
+        );
+
+      }
+
+    };
+
+
+    const base=
+      `games/${gameId}/voice`;
+
+
+    if(color==="w"){
+
+      pc.onicecandidate=e=>{
+
+        if(e.candidate){
+
+          push(
+            ref(
+              db,
+              `${base}/callerCandidates`
+            ),
+            e.candidate.toJSON()
+          );
+
+        }
+
+      };
+
+
+      const offer=
+        await pc.createOffer({
+          offerToReceiveAudio:true
+        });
+
+
+      await pc.setLocalDescription(offer);
+
+
+      await set(
+        ref(db,`${base}/offer`),
+        {
+          type:offer.type,
+          sdp:offer.sdp,
+          createdAt:Date.now()
+        }
+      );
+
+
+      onValue(
+        ref(db,`${base}/answer`),
+        async snap=>{
+
+          if(
+            snap.exists() &&
+            !pc.currentRemoteDescription
+          ){
+
+            await pc.setRemoteDescription(
+              snap.val()
+            );
+
+          }
+
+        }
+      );
+
+
+      onValue(
+        ref(db,`${base}/calleeCandidates`),
+        snap=>{
+
+          snap.forEach(x=>{
+
+            pc
+              .addIceCandidate(x.val())
+              .catch(()=>{});
+
+          });
+
+        }
+      );
+
+
+    }else{
+
+      onValue(
+        ref(db,`${base}/offer`),
+        async snap=>{
+
+          if(
+            !snap.exists() ||
+            pc.currentRemoteDescription
+          ){
+            return;
+          }
+
+
+          await pc.setRemoteDescription(
+            snap.val()
+          );
+
+
+          pc.onicecandidate=e=>{
+
+            if(e.candidate){
+
+              push(
+                ref(
+                  db,
+                  `${base}/calleeCandidates`
+                ),
+                e.candidate.toJSON()
+              );
+
+            }
+
+          };
+
+
+          const answer=
+            await pc.createAnswer({
+              offerToReceiveAudio:true
+            });
+
+
+          await pc.setLocalDescription(
+            answer
+          );
+
+
+          await set(
+            ref(db,`${base}/answer`),
+            {
+              type:answer.type,
+              sdp:answer.sdp,
+              createdAt:Date.now()
+            }
+          );
+
+        }
+      );
+
+
+      onValue(
+        ref(db,`${base}/callerCandidates`),
+        snap=>{
+
+          snap.forEach(x=>{
+
+            pc
+              .addIceCandidate(x.val())
+              .catch(()=>{});
+
+          });
+
+        }
+      );
+
+    }
+
+
+    $("voice").disabled=true;
+
+    $("voice").textContent=
+      "Voice On";
+
+    $("mute").disabled=false;
+
+    $("voiceState").textContent=
+      "Connecting…";
+
+
+  }catch(e){
+
+    console.error(e);
+
+    $("voiceState").textContent=
+      "Error";
+
+    $toast(
+      "Voice failed: "+
+      (
+        e.message||
+        "Allow microphone permission."
+      )
+    );
+
+  }
+
+}
+
+
+onAuthStateChanged(
+  auth,
+  async u=>{
+
+    if(!u)return;
+
+
+    uid=u.uid;
+
+
+    let p=
+      await get(
+        ref(db,`players/${uid}`)
+      );
+
+
+    myId=
+      p.exists()
+      ?p.val().guestId
+      :newGuest();
+
+
+    await set(
+      ref(db,`players/${uid}`),
+      {
+        guestId:myId,
+        online:true,
+        inGame:false,
+        updatedAt:Date.now()
+      }
+    );
+
+
+    onDisconnect(
+      ref(db,`players/${uid}`)
+    )
+    .update({
+      online:false,
+      inGame:false
+    });
+
+
+    $("myId").textContent=myId;
+
+    $("dot").classList.add("ok");
+
+    $("conn").textContent="Online";
+
+
+    /*
+      ONLINE PLAYERS
+    */
+
+    onValue(
+      ref(db,"players"),
+      s=>
+        renderPlayers(s.val()),
+      e=>{
+
+        $("count").textContent="!";
+
+        $("players").innerHTML=
+          `<div class="empty">
+            Online list error:
+            ${esc(
+              e.message||
+              "Database access denied"
+            )}
+          </div>`;
+
+      }
+    );
+
+
+    /*
+      CHALLENGE REQUESTS
+    */
+
+    onValue(
+      ref(db,"requests"),
+      s=>
+        renderRequests(s.val()),
+      e=>{
+
+        $("requests").innerHTML=
+          `<div class="empty">
+            Request access error:
+            ${esc(
+              e.message||
+              "database access denied"
+            )}
+          </div>`;
+
+      }
+    );
+
+
+    /*
+      ACCEPTED CHALLENGES
+    */
+
+    watchAccepted();
+
+
+    renderBoard();
+
+    renderClocks();
+
+  }
+);
+
+
+signInAnonymously(auth)
+.catch(e=>{
+
+  $("conn").textContent=
+    "Auth setup required";
+
+  $toast(
+    "Enable Anonymous Authentication in Firebase."
+  );
+
+});
+
 </script>
+
 </body>
 </html>

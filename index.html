@@ -2245,329 +2245,8 @@ function renderBoard(){
   }
 }
 
-/* =========================================================
-   BOARD CLICK
-========================================================= */
 
-function clickSquare(square){
-
-  if(
-    !chess ||
-    !gameId ||
-    !gameData ||
-    gameData.status !== "playing"
-  ){
-
-    return;
-
-  }
-
-
-  if(
-    chess.turn() !== myColor
-  ){
-
-    toast("Wait for your turn.");
-
-    return;
-
-  }
-
-
-  const piece =
-    chess.get(square);
-
-
-  /* First selection */
-
-  if(!selectedSquare){
-
-    if(
-      piece &&
-      piece.color === myColor
-    ){
-
-      selectedSquare =
-        square;
-
-      renderBoard();
-
-    }
-
-    return;
-
-  }
-
-
-  /* Deselect */
-
-  if(
-    selectedSquare === square
-  ){
-
-    selectedSquare =
-      null;
-
-    renderBoard();
-
-    return;
-
-  }
-
-
-  /* Switch piece */
-
-  if(
-    piece &&
-    piece.color === myColor
-  ){
-
-    selectedSquare =
-      square;
-
-    renderBoard();
-
-    return;
-
-  }
-
-
-  const legalMoves = chess.moves({
-  verbose: true
-});
-
-const move = legalMoves.find(m =>
-  m.from === selectedSquare &&
-  m.to === square
-);
-
-if(!move){
-  toast("Illegal move.");
-  return;
-}
-
-if(move.flags && move.flags.includes("p")){
-
-  promotionMove = {
-    from: selectedSquare,
-    to: square
-  };
-
-  $("promotionModal").style.display = "flex";
-
-  return;
-}
-
-makeMove(
-  selectedSquare,
-  square,
-  null
-);
-
-
-/* =========================================================
-   PROMOTION
-========================================================= */
-
-document.querySelectorAll(
-  ".promotion button"
-)
-.forEach(button=>{
-
-  button.onclick =
-    ()=>{
-
-      if(!promotionMove){
-        return;
-      }
-
-
-      const from =
-        promotionMove.from;
-
-      const to =
-        promotionMove.to;
-
-      const piece =
-        button.dataset.piece;
-
-
-      $("promotionModal")
-        .style.display =
-        "none";
-
-
-      promotionMove =
-        null;
-
-
-      makeMove(
-        from,
-        to,
-        piece
-      );
-
-    };
-
-});
-
-
-/* =========================================================
-   MAKE MOVE
-========================================================= */
-
-async function makeMove(
-  from,
-  to,
-  promotion
-){
-
-  if(
-    !gameId ||
-    !chess ||
-    !gameData
-  ){
-
-    return;
-
-  }
-
-
-  if(
-    chess.turn() !== myColor
-  ){
-
-    return;
-
-  }
-
-
-  let move;
-
-
-  try{
-
-    move =
-      chess.move({
-
-        from,
-
-        to,
-
-        promotion:
-          promotion || "q"
-
-      });
-
-  }catch(error){
-
-    toast("Illegal move.");
-
-    return;
-
-  }
-
-
-  if(!move){
-
-    toast("Illegal move.");
-
-    return;
-
-  }
-
-
-  selectedSquare =
-    null;
-
-
-  /*
-    Use server-side game snapshot
-    as the base for the move clock.
-  */
-
-  let w =
-    Number(
-      gameData.whiteTime
-    );
-
-
-  let b =
-    Number(
-      gameData.blackTime
-    );
-
-
-  /*
-    Subtract elapsed time from
-    player who just moved.
-  */
-
-  const elapsed =
-    (
-      Date.now() -
-      Number(
-        gameData.lastTick ||
-        Date.now()
-      )
-    ) / 1000;
-
-
-  if(myColor === "w"){
-
-    w =
-      Math.max(
-        0,
-        w-elapsed
-      );
-
-  }else{
-
-    b =
-      Math.max(
-        0,
-        b-elapsed
-      );
-
-  }
-
-
-  /*
-    3+2 increment.
-  */
-
-  if(
-    selectedTime === "3+2"
-  ){
-
-    if(myColor === "w"){
-      w += 2;
-    }else{
-async function makeMove(from, to, promotion){
-
-  if(!gameId || !chess || !gameData){
-    return;
-  }
-
-  if(chess.turn() !== myColor){
-    toast("Wait for your turn.");
-    return;
-  }
-
-  // Verify the exact move
-  const legalMoves = chess.moves({
-    verbose:true
-  });
-
-  const legalMove = legalMoves.find(m =>
-    m.from === from &&
-    m.to === to
-  );
-
-  if(!legalMove){
-    toast("Illegal move.");
-    return;
-  }
+   
 
   let move;
 
@@ -2667,43 +2346,361 @@ async function makeMove(from, to, promotion){
     status = "draw";
   }
 
+
+/* =========================================================
+   BOARD CLICK
+========================================================= */
+
+function clickSquare(square){
+
+  if(
+    !chess ||
+    !gameId ||
+    !gameData ||
+    gameData.status !== "playing"
+  ){
+    return;
+  }
+
+  if(chess.turn() !== myColor){
+    toast("Wait for your turn.");
+    return;
+  }
+
+  const piece = chess.get(square);
+
+  /* First selection */
+
+  if(!selectedSquare){
+
+    if(piece && piece.color === myColor){
+
+      selectedSquare = square;
+
+      renderBoard();
+    }
+
+    return;
+  }
+
+  /* Deselect */
+
+  if(selectedSquare === square){
+
+    selectedSquare = null;
+
+    renderBoard();
+
+    return;
+  }
+
+  /* Select another own piece */
+
+  if(piece && piece.color === myColor){
+
+    selectedSquare = square;
+
+    renderBoard();
+
+    return;
+  }
+
+  /* Find legal move */
+
+  const legalMoves = chess.moves({
+    square: selectedSquare,
+    verbose: true
+  });
+
+  const move = legalMoves.find(m =>
+    m.from === selectedSquare &&
+    m.to === square
+  );
+
+  if(!move){
+
+    toast("Illegal move.");
+
+    return;
+  }
+
+  /* Promotion */
+
+  if(move.flags && move.flags.includes("p")){
+
+    promotionMove = {
+      from: selectedSquare,
+      to: square
+    };
+
+    $("promotionModal").style.display = "flex";
+
+    return;
+  }
+
+  makeMove(
+    selectedSquare,
+    square,
+    null
+  );
+}
+
+
+/* =========================================================
+   PROMOTION
+========================================================= */
+
+document.querySelectorAll(
+  ".promotion button"
+).forEach(button=>{
+
+  button.onclick = ()=>{
+
+    if(!promotionMove){
+      return;
+    }
+
+    const from =
+      promotionMove.from;
+
+    const to =
+      promotionMove.to;
+
+    const piece =
+      button.dataset.piece;
+
+    $("promotionModal").style.display =
+      "none";
+
+    promotionMove = null;
+
+    makeMove(
+      from,
+      to,
+      piece
+    );
+  };
+
+});
+
+
+/* =========================================================
+   MAKE MOVE
+========================================================= */
+
+async function makeMove(
+  from,
+  to,
+  promotion
+){
+
+  if(
+    !gameId ||
+    !chess ||
+    !gameData
+  ){
+    return;
+  }
+
+  if(chess.turn() !== myColor){
+
+    toast("Wait for your turn.");
+
+    return;
+  }
+
+  /* Verify legal move */
+
+  const legalMoves = chess.moves({
+    verbose:true
+  });
+
+  const legalMove = legalMoves.find(m =>
+    m.from === from &&
+    m.to === to
+  );
+
+  if(!legalMove){
+
+    toast("Illegal move.");
+
+    return;
+  }
+
+  let move;
+
+  try{
+
+    move = chess.move({
+      from: from,
+      to: to,
+      promotion: promotion || "q"
+    });
+
+  }catch(error){
+
+    console.error(
+      "Move error:",
+      error
+    );
+
+    toast("Move failed.");
+
+    return;
+  }
+
+  if(!move){
+
+    toast("Move failed.");
+
+    return;
+  }
+
+  selectedSquare = null;
+
   /*
-    Update local data immediately.
-    This prevents the old Firebase snapshot
-    from temporarily putting the pawn back.
+    Calculate remaining time
   */
+
+  let whiteRemaining =
+    Number(gameData.whiteTime || 0);
+
+  let blackRemaining =
+    Number(gameData.blackTime || 0);
+
+  const lastTick =
+    Number(
+      gameData.lastTick || Date.now()
+    );
+
+  const elapsed =
+    Math.max(
+      0,
+      (Date.now() - lastTick) / 1000
+    );
+
+  if(myColor === "w"){
+
+    whiteRemaining =
+      Math.max(
+        0,
+        whiteRemaining - elapsed
+      );
+
+  }else{
+
+    blackRemaining =
+      Math.max(
+        0,
+        blackRemaining - elapsed
+      );
+  }
+
+  /* 3+2 increment */
+
+  if(selectedTime === "3+2"){
+
+    if(myColor === "w"){
+
+      whiteRemaining += 2;
+
+    }else{
+
+      blackRemaining += 2;
+    }
+  }
+
+  /* Game result */
+
+  let status = "playing";
+
+  if(chess.isCheckmate()){
+
+    status =
+      myColor === "w"
+        ? "white_win"
+        : "black_win";
+
+  }else if(
+    chess.isDraw() ||
+    chess.isStalemate() ||
+    chess.isThreefoldRepetition() ||
+    chess.isInsufficientMaterial()
+  ){
+
+    status = "draw";
+  }
+
+  /*
+    Update local game immediately
+  */
+
+  const newLastTick =
+    Date.now();
 
   gameData = {
     ...gameData,
 
     fen: chess.fen(),
+
     pgn: chess.pgn(),
+
     turn: chess.turn(),
-    whiteTime: whiteRemaining,
-    blackTime: blackRemaining,
-    lastTick: Date.now(),
-    status: status
+
+    whiteTime:
+      whiteRemaining,
+
+    blackTime:
+      blackRemaining,
+
+    lastTick:
+      newLastTick,
+
+    status:
+      status
   };
 
-  whiteTime = whiteRemaining;
-  blackTime = blackRemaining;
+  whiteTime =
+    whiteRemaining;
+
+  blackTime =
+    blackRemaining;
 
   renderBoard();
+
   renderTimers();
 
-  // Now sync with Firebase
+  /* Firebase sync */
+
   try{
 
     await update(
-      ref(db, `games/${gameId}`),
+      ref(
+        db,
+        `games/${gameId}`
+      ),
       {
-        fen: chess.fen(),
-        pgn: chess.pgn(),
-        turn: chess.turn(),
-        whiteTime: whiteRemaining,
-        blackTime: blackRemaining,
-        lastTick: Date.now(),
-        status: status
+
+        fen:
+          chess.fen(),
+
+        pgn:
+          chess.pgn(),
+
+        turn:
+          chess.turn(),
+
+        whiteTime:
+          whiteRemaining,
+
+        blackTime:
+          blackRemaining,
+
+        lastTick:
+          newLastTick,
+
+        status:
+          status
       }
     );
 
@@ -2717,9 +2714,9 @@ async function makeMove(from, to, promotion){
     toast(
       "Move made locally, but sync failed."
     );
-
   }
 }
+
 
 /* =========================================================
    TIMERS
@@ -2731,13 +2728,11 @@ function renderTimers(){
     return;
   }
 
-
-  let w =
+  const w =
     whiteTime;
 
-  let b =
+  const b =
     blackTime;
-
 
   $("opponentTime").textContent =
     formatTime(
@@ -2746,7 +2741,6 @@ function renderTimers(){
         : w
     );
 
-
   $("myTime").textContent =
     formatTime(
       myColor === "w"
@@ -2754,26 +2748,21 @@ function renderTimers(){
         : b
     );
 
+  $("opponentBar").classList.toggle(
+    "active",
+    chess &&
+    (
+      myColor === "w"
+        ? chess.turn() === "b"
+        : chess.turn() === "w"
+    )
+  );
 
-  $("opponentBar")
-    .classList.toggle(
-      "active",
-      chess &&
-      (
-        myColor === "w"
-          ? chess.turn() === "b"
-          : chess.turn() === "w"
-      )
-    );
-
-
-  $("myBar")
-    .classList.toggle(
-      "active",
-      chess &&
-      chess.turn() === myColor
-    );
-
+  $("myBar").classList.toggle(
+    "active",
+    chess &&
+    chess.turn() === myColor
+  );
 }
 
 
@@ -2783,7 +2772,6 @@ function startClock(){
     clockInterval
   );
 
-
   clockInterval =
     setInterval(()=>{
 
@@ -2792,11 +2780,8 @@ function startClock(){
         !chess ||
         gameData.status !== "playing"
       ){
-
         return;
-
       }
-
 
       const elapsed =
         (
@@ -2807,27 +2792,22 @@ function startClock(){
           )
         ) / 1000;
 
-
       let w =
         Number(
-          gameData.whiteTime
+          gameData.whiteTime || 0
         );
-
 
       let b =
         Number(
-          gameData.blackTime
+          gameData.blackTime || 0
         );
 
-
-      if(
-        chess.turn() === "w"
-      ){
+      if(chess.turn() === "w"){
 
         w =
           Math.max(
             0,
-            w-elapsed
+            w - elapsed
           );
 
       }else{
@@ -2835,26 +2815,17 @@ function startClock(){
         b =
           Math.max(
             0,
-            b-elapsed
+            b - elapsed
           );
-
       }
 
+      whiteTime = w;
 
-      whiteTime =
-        w;
-
-      blackTime =
-        b;
-
+      blackTime = b;
 
       renderTimers();
 
-
-      /*
-        If time reaches zero,
-        write timeout result.
-      */
+      /* Timeout */
 
       if(
         w <= 0 &&
@@ -2862,21 +2833,18 @@ function startClock(){
       ){
 
         update(
-          ref(db,`games/${gameId}`),
+          ref(
+            db,
+            `games/${gameId}`
+          ),
           {
-
             whiteTime:0,
-
             lastTick:Date.now(),
-
-            status:
-              "black_win_timeout"
-
+            status:"black_win_timeout"
           }
         );
 
       }
-
 
       if(
         b <= 0 &&
@@ -2884,23 +2852,19 @@ function startClock(){
       ){
 
         update(
-          ref(db,`games/${gameId}`),
+          ref(
+            db,
+            `games/${gameId}`
+          ),
           {
-
             blackTime:0,
-
             lastTick:Date.now(),
-
-            status:
-              "white_win_timeout"
-
+            status:"white_win_timeout"
           }
         );
-
       }
 
     },200);
-
 }
 
 

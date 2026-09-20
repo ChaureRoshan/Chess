@@ -1193,10 +1193,103 @@ document.querySelectorAll(".timeBtn")
 
 
 /* =========================================================
-   AUTHENTICATION
+   FIREBASE CONNECTION - FINAL
 ========================================================= */
 
-async function login(){
+async function setupUser(user){
+
+  if(!user){
+    throw new Error("Firebase user not available");
+  }
+
+  uid = user.uid;
+
+  myId =
+    "Guest-" +
+    uid.substring(0,6).toUpperCase();
+
+  $("myId").textContent = myId;
+  $("myPlayerId").textContent = myId;
+
+  setConnection("Online","online");
+
+  // Register this guest
+  await update(
+    ref(db,`players/${uid}`),
+    {
+      guestId: myId,
+      online: true,
+      updatedAt: Date.now()
+    }
+  );
+
+  // Automatically mark offline when connection closes
+  onDisconnect(
+    ref(db,`players/${uid}`)
+  ).update({
+    online: false,
+    updatedAt: Date.now()
+  });
+
+  // Start realtime listeners
+  watchPlayers();
+  watchRequests();
+  watchAcceptedGames();
+
+  console.log(
+    "FIREBASE CONNECTED:",
+    uid
+  );
+}
+
+
+/* Authentication state */
+
+onAuthStateChanged(
+  auth,
+  async user => {
+
+    try{
+
+      if(!user){
+
+        setConnection(
+          "Connecting...",
+          ""
+        );
+
+        return;
+      }
+
+      await setupUser(user);
+
+    }catch(error){
+
+      console.error(
+        "Firebase setup error:",
+        error
+      );
+
+      setConnection(
+        "Connection Error",
+        "error"
+      );
+
+      toast(
+        error.code
+          ? error.code + ": " + error.message
+          : error.message
+      );
+
+    }
+
+  }
+);
+
+
+/* Start anonymous login */
+
+async function startFirebase(){
 
   try{
 
@@ -1209,7 +1302,10 @@ async function login(){
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      "Anonymous authentication error:",
+      error
+    );
 
     setConnection(
       "Auth Error",
@@ -1217,8 +1313,9 @@ async function login(){
     );
 
     toast(
-      "Anonymous login failed: " +
-      (error.message || "")
+      error.code
+        ? error.code + ": " + error.message
+        : error.message
     );
 
   }
@@ -1226,105 +1323,7 @@ async function login(){
 }
 
 
-onAuthStateChanged(
-  auth,
-  async user=>{
-
-    try{
-
-      if(!user){
-
-        return;
-
-      }
-
-
-      uid =
-        user.uid;
-
-
-      myId =
-        "Guest-" +
-        uid
-          .substring(0,6)
-          .toUpperCase();
-
-
-      $("myId").textContent =
-        myId;
-
-      $("myPlayerId").textContent =
-        myId;
-
-
-      setConnection(
-        "Online",
-        "online"
-      );
-
-
-      /*
-        Do NOT use set() here.
-        update() preserves gameId/inGame.
-      */
-
-      await update(
-        ref(db,`players/${uid}`),
-        {
-
-          guestId:myId,
-
-          online:true,
-
-          inGame:false,
-
-          updatedAt:Date.now()
-
-        }
-      );
-
-
-      await onDisconnect(
-        ref(db,`players/${uid}`)
-      ).update({
-
-        online:false,
-
-        updatedAt:Date.now()
-
-      });
-
-
-      watchPlayers();
-
-      watchRequests();
-
-      watchAcceptedGames();
-
-
-    }catch(error){
-
-      console.error(error);
-
-      setConnection(
-        "Firebase Error",
-        "error"
-      );
-
-      toast(
-        "Firebase error: " +
-        (error.message || "")
-      );
-
-    }
-
-  }
-);
-
-
-login();
-
-
+startFirebase();
 /* =========================================================
    ONLINE PLAYERS
 ========================================================= */

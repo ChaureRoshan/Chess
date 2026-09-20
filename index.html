@@ -2121,117 +2121,95 @@ const pieces = {
 
 function renderBoard(){
 
-  const board =
-    $("board");
+  const board = $("board");
+  board.innerHTML = "";
 
-  board.innerHTML =
-    "";
+  if(!chess) return;
 
+  // All legal moves for the currently selected piece
+  const legalMoves = selectedSquare
+    ? chess.moves({
+        square: selectedSquare,
+        verbose: true
+      })
+    : [];
 
-  if(!chess){
-    return;
-  }
+  const moveMap = new Map();
 
-
-  const legalMoves =
-    selectedSquare
-      ? chess.moves({
-          square:selectedSquare,
-          verbose:true
-        })
-      : [];
-
-
-  const moveMap =
-    new Map();
-
-
-  legalMoves.forEach(move=>{
-
+  legalMoves.forEach(move => {
     moveMap.set(
       move.to,
-      move.captured
-        ? "capture"
-        : "legal"
+      move.captured ? "capture" : "legal"
     );
-
   });
 
+  /*
+    CORRECT BOARD ORIENTATION
 
-  for(
-    let visualRow=0;
-    visualRow<8;
-    visualRow++
-  ){
+    White:
+      a8 ... h8
+      ...
+      a1 ... h1
 
-    for(
-      let visualCol=0;
-      visualCol<8;
-      visualCol++
-    ){
+    Black:
+      h1 ... a1
+      ...
+      h8 ... a8
+  */
 
-      const boardRow =
-        myColor === "b"
-          ? visualRow
-          : 7-visualRow;
+  for(let visualRow = 0; visualRow < 8; visualRow++){
 
+    for(let visualCol = 0; visualCol < 8; visualCol++){
 
-      const boardCol =
-        myColor === "b"
-          ? 7-visualCol
-          : visualCol;
+      let boardRow;
+      let boardCol;
 
+      if(myColor === "w"){
+
+        // White perspective
+        boardRow = visualRow;
+        boardCol = visualCol;
+
+      }else{
+
+        // Black perspective
+        boardRow = 7 - visualRow;
+        boardCol = 7 - visualCol;
+
+      }
 
       const squareName =
-        String.fromCharCode(
-          97 + boardCol
-        ) +
-        (8-boardRow);
-
+        String.fromCharCode(97 + boardCol) +
+        (8 - boardRow);
 
       const square =
         document.createElement("div");
 
-
       square.className =
         "square " +
         (
-          (visualRow+visualCol)%2 === 0
+          (visualRow + visualCol) % 2 === 0
             ? "light"
             : "dark"
         );
 
-
-      if(
-        selectedSquare ===
-        squareName
-      ){
-
-        square.classList.add(
-          "selected"
-        );
-
+      if(selectedSquare === squareName){
+        square.classList.add("selected");
       }
 
-
       if(moveMap.has(squareName)){
-
         square.classList.add(
           moveMap.get(squareName)
         );
-
       }
-
 
       const piece =
         chess.get(squareName);
-
 
       if(piece){
 
         const el =
           document.createElement("span");
-
 
         el.className =
           "piece " +
@@ -2241,36 +2219,22 @@ function renderBoard(){
               : "blackPiece"
           );
 
-
         el.textContent =
-          pieces[
-            piece.color
-          ][
-            piece.type
-          ];
-
+          pieces[piece.color][piece.type];
 
         square.appendChild(el);
-
       }
 
-
-      square.onclick =
-        ()=>clickSquare(
-          squareName
-        );
-
-
-      board.appendChild(
-        square
+      // Entire square is clickable
+      square.addEventListener(
+        "click",
+        () => clickSquare(squareName)
       );
 
+      board.appendChild(square);
     }
-
   }
-
 }
-
 
 /* =========================================================
    BOARD CLICK
